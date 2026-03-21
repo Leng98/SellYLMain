@@ -1,0 +1,2811 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កម្មវិធីគ្រប់គ្រងការលក់_YL_v11</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add html2canvas for image generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Hide main content when printing, only show invoice section */
+        .invoice-print-section {
+            display: none;
+        }
+        @media print {
+            body > *:not(.invoice-print-section) {
+                display: none;
+            }
+            /* Styling for 80mm thermal receipt printer */
+            .invoice-print-section {
+                display: block;
+                font-family: sans-serif;
+                color: #000;
+                width: 80mm;
+                padding: 5mm;
+                margin-left: -6mm;
+                margin-right: 4mm;
+                box-sizing: border-box;
+                font-size: 14px;
+                line-height: 1.2;
+            }
+            /* Hide modal when printing from browser menu */
+            .modal { display: none !important; }
+        }
+        /* Custom modal for alerts and confirmations */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #editModal .modal-content, #messageModal .modal-content {
+            max-width: 550px;
+            text-align: left;
+        }
+        #messageModal .modal-content {
+            text-align: center;
+        }
+        #modalRichContent {
+            text-align: left;
+        }
+        /* Preview Modal Styles */
+        #previewModal .modal-content {
+            width: auto;
+            max-width: 450px;
+            padding: 20px;
+            background-color: #fff;
+        }
+        #invoicePreviewContent {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            margin: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .modal-buttons {
+            margin-top: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid rgba(139, 92, 246, 0.2);
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Dark mode styles */
+        body.dark-mode { background-color: #1a202c; color: #e2e8f0; }
+        body.dark-mode .bg-white { background-color: #2d3748; }
+        body.dark-mode .bg-gray-100 { background-color: #1a202c; }
+        body.dark-mode .bg-gray-50 { background-color: #2d3748; }
+        body.dark-mode .bg-gray-200 { background-color: #4a5568; }
+        body.dark-mode .text-gray-900, body.dark-mode .text-gray-700, body.dark-mode .text-gray-500, body.dark-mode .text-gray-800 { color: #e2e8f0; }
+        body.dark-mode .bg-white.hover\:bg-gray-100:hover { background-color: #4a5568; }
+        body.dark-mode .hover\:bg-gray-100:hover { background-color: #4a5568; }
+        body.dark-mode .bg-indigo-50 { background-color: #2a384a; }
+        body.dark-mode .bg-green-50 { background-color: #1f3b33; }
+        body.dark-mode .bg-yellow-50 { background-color: #3b361a; }
+        body.dark-mode .bg-blue-100 { background-color: #2c3e50; color: #e2e8f0; }
+        body.dark-mode .bg-green-100 { background-color: #1e3a2f; color: #e2e8f0; }
+        body.dark-mode .text-indigo-700, body.dark-mode .text-indigo-800, body.dark-mode .text-green-700, body.dark-mode .text-green-800, body.dark-mode .text-yellow-700, body.dark-mode .text-yellow-800, body.dark-mode .text-blue-700, body.dark-mode .text-blue-800 { color: #e2e8f0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #4a5568; color: #e2e8f0; }
+        body.dark-mode input::placeholder, body.dark-mode select::placeholder, body.dark-mode textarea::placeholder { color: #a0aec0; }
+        body.dark-mode .modal-content { background-color: #2d3748; }
+        body.dark-mode table tbody tr:hover { background-color: #4a5568; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Modal for messages -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessage" class="text-lg font-semibold text-gray-800"></p>
+            <div id="modalRichContent" class="mt-4 text-left text-sm text-gray-700 space-y-1"></div>
+            <div class="modal-buttons">
+                <button id="modalOkBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300">យល់ព្រម</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Invoice Preview -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-lg font-bold text-gray-700 m-4">មើលវិក្កយបត្រមុនបោះពុម្ព</h2>
+            <div id="invoicePreviewContent" class="border border-gray-300 p-2 bg-white text-left text-sm shadow-inner" style="min-height: 200px;">
+                <!-- Invoice HTML will be injected here -->
+            </div>
+            <div class="modal-buttons">
+                <button id="previewCopyBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">ចម្លងរូបភាព</button>
+                <button id="previewPrintBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">បោះពុម្ព</button>
+                <button id="previewCloseBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-300">បិទ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for confirmations -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <p id="confirmMessage" class="text-lg font-semibold text-gray-800"></p>
+            <div class="modal-buttons">
+                <button id="confirmYesBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">បាទ/ចាស</button>
+                <button id="confirmNoBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300">ទេ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Customer Info -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">កែប្រែព័ត៌មានអតិថិជន</h2>
+            <input type="hidden" id="editDocId">
+            <div class="space-y-3">
+                <div>
+                    <label for="editSellerName" class="block text-sm font-medium text-gray-700">អ្នកលក់</label>
+                    <select id="editSellerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </select>
+                </div>
+                <div>
+                    <label for="editCustomerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអតិថិជន</label>
+                    <input type="text" id="editCustomerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="editCustomerPhone" class="block text-sm font-medium text-gray-700">លេខទូរស័ព្ទ</label>
+                    <input type="text" id="editCustomerPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="editCustomerAddress" class="block text-sm font-medium text-gray-700">អាសយដ្ឋាន</label>
+                    <input type="text" id="editCustomerAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="pt-2">
+                    <label for="editStoreName" class="block text-sm font-medium text-gray-700">ហាង</label>
+                    <select id="editStoreName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </select>
+                </div>
+                <div class="pt-2">
+                    <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700">ជម្រើសសម្រាប់ការដឹកជញ្ជូន</label>
+                    <select id="editDeliveryOption" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="VET">VET</option>
+                        <option value="J&T">J&T</option>
+                        <option value="ភ្នំពេញ">ភ្នំពេញ</option>
+                        <option value="មិនបានជ្រើសរើស">មិនបានជ្រើសរើស</option>
+                    </select>
+                </div>
+                <div class="pt-2">
+                    <label for="editDeliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក (ដុល្លារ)</label>
+                    <input type="number" id="editDeliveryFee" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                 <div class="pt-2">
+                    <label for="editGeneralNote" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់ (Note ចុងវិក្កយបត្រ)</label>
+                    <input type="text" id="editGeneralNote" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="pt-2">
+                    <label for="editPaymentOptionSelect" class="block text-sm font-medium text-gray-700">ជម្រើសការទូទាត់</label>
+                    <select id="editPaymentOptionSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="AC">AC</option>
+                        <option value="ABA">ABA</option>
+                        <option value="Wing">Wing</option>
+                        <option value="តាមអ្នកដឹក">តាមអ្នកដឹក</option>
+                        <option value="ធនាគារផ្សេង">ធនាគារផ្សេង (Custom)</option>
+                        <option value="មិនទាន់វេទឹកប្រាក់">មិនទាន់វេទឹកប្រាក់ (Unpaid)</option>
+                    </select>
+                </div>
+                <div class="pt-2 hidden" id="editOtherPaymentContainer">
+                    <label for="editOtherPaymentInput" class="block text-sm font-medium text-gray-700">ឈ្មោះធនាគារ/ការទូទាត់ផ្សេងទៀត</label>
+                    <input type="text" id="editOtherPaymentInput" placeholder="ដូចជា: ធនាគារ Wing Bank, វីង, ផ្សេងៗ..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="pt-2">
+                    <label for="editPaymentNotes" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់បន្ថែម (លេខ TxD)</label>
+                    <input type="text" id="editPaymentNotes" placeholder="លេខ TxD" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="editSaveBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300">រក្សាទុក</button>
+                <button id="editCancelBtn" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading message container -->
+    <div id="loadingView" class="loading-container">
+        <div class="flex flex-col items-center p-8 bg-white rounded-lg shadow-lg">
+            <div class="loading-spinner"></div>
+            <p class="mt-4 text-gray-700 font-semibold">កំពុងផ្ទុកទិន្នន័យ...</p>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="mainApp" class="flex w-full flex-col hidden">
+        <!-- Top Navigation Bar -->
+        <nav class="bg-indigo-700 text-white p-4 flex items-center justify-between flex-wrap">
+            <div class="flex items-center gap-4 mb-2 sm:mb-0">
+                <div class="flex items-center space-x-1 overflow-x-auto pb-1 sm:space-x-2">
+                    <button id="dashboardNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-white bg-indigo-900 hover:bg-indigo-800 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                        <span class="whitespace-nowrap">ផ្ទាំងគ្រប់គ្រង</span>
+                    </button>
+                    <button id="customerInfoNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm-1.5 6a4.5 4.5 0 00-4.5 4.5V18h9v-1.5A4.5 4.5 0 0011.5 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
+                        <span class="whitespace-nowrap">ព័ត៌មានអតិថិជន</span>
+                    </button>
+                    <button id="addItemNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="whitespace-nowrap">បន្ថែមទំនិញ</span>
+                    </button>
+                    <button id="storeOptionsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
+                           <path fill-rule="evenodd" d="M10.496 2.132a1 1 0 00-.992 0l-7 4A1 1 0 003 8v7a1 1 0 100 2h14a1 1 0 100-2V8a1 1 0 00.504-1.868l-7-4zM6 9a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zm3 1a1 1 0 012 0v3a1 1 0 11-2 0v-3zm5-1a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="whitespace-nowrap">ជម្រើសហាង</span>
+                    </button>
+                    <button id="sellerOptionsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="whitespace-nowrap">ជម្រើសអ្នកលក់</span>
+                    </button>
+                    <button id="updatePaymentNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                          <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="whitespace-nowrap">កែប្រែការទូទាត់</span>
+                    </button>
+                    <button id="receiptSettingsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="whitespace-nowrap">កំណត់វិក្កយបត្រ</span>
+                    </button>
+
+                    <button id="historyNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2.75 9a.75.75 0 000 1.5h14.5a.75.75 0 000-1.5H2.75z" fill-rule="evenodd" clip-rule="evenodd" /></svg>
+                        <span class="whitespace-nowrap">មើលប្រវត្តិទិន្នន័យ</span>
+                    </button>
+                </div>
+            </div>
+            <button id="themeToggleBtn" class="p-2 rounded-md hover:bg-indigo-600 transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" id="lightIcon" class="h-6 w-6 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" id="darkIcon" class="h-6 w-6 text-gray-200 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0015.354 20.354 9.003 9.003 0 0020.354 15.354z" /></svg>
+            </button>
+        </nav>
+        
+        <!-- Content Area -->
+        <div id="contentArea" class="p-4 flex-grow">
+            
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="hidden max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 space-y-8 mb-6">
+                 <div class="flex justify-between items-center mb-6">
+                        <div class="text-center w-full">
+                            <h1 class="text-3xl font-bold text-gray-800">កម្មវិធីគ្រប់គ្រងការលក់_YL</h1>
+                            <p class="text-gray-500 mt-2">កត់ត្រា និងបោះពុម្ពវិក្កយបត្រលក់</p>
+                        </div>
+                    </div>
+                     <div class="bg-white rounded-lg p-6 shadow-md mb-6 border border-gray-100">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">សង្ខេបការលក់ប្រចាំថ្ងៃ (ថ្ងៃនេះ)</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div class="bg-blue-100 p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+                                <p class="text-sm text-blue-700 font-medium">វិក្កយបត្រថ្ងៃនេះ</p>
+                                <p id="todaySalesCount" class="text-3xl font-bold text-blue-800 mt-1">0</p>
+                            </div>
+                            <div class="bg-green-100 p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+                                <p class="text-sm text-green-700 font-medium">ចំណូលថ្ងៃនេះ</p>
+                                <p id="todayRevenue" class="text-3xl font-bold text-green-800 mt-1">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-md mb-6 border border-gray-100">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">សង្ខេបតាមកាលបរិច្ឆេទ (Period)</h2>
+                        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"> 
+                            <div>
+                                <label for="startDate" class="block text-sm font-medium text-gray-700">ចាប់ពីថ្ងៃ</label>
+                                <input type="date" id="startDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                            </div>
+                            <div>
+                                <label for="endDate" class="block text-sm font-medium text-gray-700">ដល់ថ្ងៃ</label>
+                                <input type="date" id="endDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                            </div>
+                            <div>
+                                <label for="dashboardDeliveryFilter" class="block text-sm font-medium text-gray-700">តម្រងសេវាដឹក</label>
+                                <select id="dashboardDeliveryFilter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                                    <option value="All">ទាំងអស់</option>
+                                    <option value="VET">VET</option>
+                                    <option value="J&T">J&T</option>
+                                    <option value="ភ្នំពេញ">ភ្នំពេញ</option>
+                                    <option value="មិនបានជ្រើសរើស">មិនបានជ្រើសរើស</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="dashboardPaymentStatusFilter" class="block text-sm font-medium text-gray-700">ស្ថានភាពទូទាត់</label>
+                                <select id="dashboardPaymentStatusFilter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                                    <option value="All">ទាំងអស់</option>
+                                    <option value="Paid">បានបង់រួច</option>
+                                    <option value="Unpaid">មិនទាន់បង់</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                                <p class="text-sm text-indigo-700 font-medium">ចំនួនការលក់សរុប (វិក្កយបត្រ)</p>
+                                <p id="totalSalesCount" class="text-3xl font-bold text-indigo-800 mt-1">0</p>
+                            </div>
+                            <div class="bg-green-50 p-6 rounded-lg shadow-sm">
+                                <p class="text-sm text-green-700 font-medium">ចំណូលសរុប (ដុល្លារ)</p>
+                                <p id="totalRevenue" class="text-3xl font-bold text-green-800 mt-1">$0.00</p>
+                            </div>
+                            <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
+                                <p class="text-sm text-yellow-700 font-medium">ចំណូលពីសេវាដឹក</p>
+                                <p id="totalDeliveryFee" class="text-3xl font-bold text-yellow-800 mt-1">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- NEW: Seller Performance Section -->
+                    <div class="bg-white rounded-lg p-6 shadow-md border border-gray-100">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h2 class="text-xl font-semibold text-gray-700">របាយការណ៍តាមបុគ្គលិក/អ្នកលក់ (Period)</h2>
+                        </div>
+                        
+                        <div class="mb-4">
+                             <label for="dashboardSellerFilter" class="block text-sm font-medium text-gray-700">តម្រងឈ្មោះអ្នកលក់</label>
+                             <select id="dashboardSellerFilter" class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm p-2 border p-1">
+                                <option value="All">ទាំងអស់</option>
+                                <!-- Populated dynamically -->
+                             </select>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះអ្នកលក់</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ចំនួនវិក្កយបត្រ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ចំនួនទំនិញសរុប</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ប្រាក់ Commission (200៛/មុខ)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ចំណូលសរុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sellerPerformanceList" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Customer Info View -->
+             <div id="customerInfoView" class="hidden max-w-4xl mx-auto space-y-8">
+                    <div class="bg-white rounded-lg p-6 shadow-md space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-700">ព័ត៌មានអតិថិជន</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="customerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអតិថិជន</label>
+                                <input type="text" id="customerName" placeholder="ឧទា: កញ្ញា សូជីន" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <div>
+                                <label for="customerPhone" class="block text-sm font-medium text-gray-700">លេខទូរស័ព្ទ</label>
+                                <input type="text" id="customerPhone" placeholder="012 345 678" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <div class="md:col-span-1">
+                                <label for="customerAddress" class="block text-sm font-medium text-gray-700">អាសយដ្ឋាន</label>
+                                <input type="text" id="customerAddress" placeholder="ភូមិ X ឃុំ Y" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label for="storeSelect" class="block text-sm font-medium text-gray-700">ជម្រើសហាង</label>
+                                <select id="storeSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                                    <option value="វិក្កយបត្រ">វិក្កយបត្រ (Default)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="paymentSelect" class="block text-sm font-medium text-gray-700">ជម្រើសការទូទាត់</label>
+                                <select id="paymentSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                                    <option value="មិនទាន់វេទឹកប្រាក់">មិនទាន់វេទឹកប្រាក់ (Unpaid)</option>
+                                    <option value="AC">AC</option>
+                                    <option value="ABA">ABA</option>
+                                    <option value="Wing">Wing</option>
+                                    <option value="តាមអ្នកដឹក">តាមអ្នកដឹក</option>
+                                    <option value="ធនាគារផ្សេង">ធនាគារផ្សេង (Custom)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="otherPaymentMethodContainer" class="hidden mt-4"> 
+                            <label for="otherPaymentMethod" class="block text-sm font-medium text-gray-700">ឈ្មោះធនាគារ/ការទូទាត់ផ្សេងទៀត</label>
+                            <input type="text" id="otherPaymentMethod" placeholder="ដូចជា: ធនាគារ Wing Bank, វីង, ផ្សេងៗ..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="paymentNotes" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់បន្ថែម (លេខ TxD)</label>
+                            <input type="text" id="paymentNotes" placeholder="ដាក់លេខTxd ..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-4 mb-4">
+                            <h3 class="text-sm font-medium text-blue-700">ជ្រើសរើសអ្នកលក់</h3>
+                            <div id="sellerCheckboxContainer" class="mt-2 flex flex-wrap items-center gap-4">
+                                <p class="text-sm text-gray-400 italic">សូមបន្ថែមអ្នកលក់ក្នុងម៉ឺនុយ "ជម្រើសអ្នកលក់"</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h3 class="text-sm font-medium text-gray-700">ជម្រើសសម្រាប់ការដឹកជញ្ជូន</h3>
+                            <div class="mt-2 flex items-center space-x-4">
+                                <div class="flex items-center">
+                                    <input id="vetRadio" type="radio" name="deliveryOption" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="vetRadio" class="ml-2 block text-sm text-gray-900">VET</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="jtRadio" type="radio" name="deliveryOption" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="jtRadio" class="ml-2 block text-sm text-gray-900">J&T</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="phnompenhRadio" type="radio" name="deliveryOption" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="phnompenhRadio" class="ml-2 block text-sm text-gray-900">ភ្នំពេញ</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h3 class="text-sm font-medium text-gray-700">សេវាដឹក</h3>
+                            <div class="mt-2">
+                                <label for="deliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក (ដុល្លារ)</label>
+                                <input type="number" id="deliveryFee" placeholder="0.00" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-yellow-50 rounded-md border border-yellow-200">
+                            <div class="flex items-center mb-2">
+                                <input id="enableGeneralNote" type="checkbox" class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                <label for="enableGeneralNote" class="ml-2 block text-sm font-medium text-gray-800">កំណត់សម្គាល់ (Note)</label>
+                            </div>
+                            <div id="generalNoteInputContainer" class="hidden">
+                                <label for="generalNote" class="block text-xs text-gray-500 mb-1">នឹងបង្ហាញនៅខាងក្រោមគេបង្អស់ពេលបោះពុម្ព</label>
+                                <input type="text" id="generalNote" placeholder="សូមសរសេរកំណត់សម្គាល់..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-md space-y-4 mt-6">
+                         <h2 class="text-xl font-semibold text-gray-700">បញ្ចូលព័ត៌មានការលក់</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="col-span-1 md:col-span-2">
+                                <label for="itemName" class="block text-sm font-medium text-gray-700">ឈ្មោះទំនិញ</label>
+                                <div class="relative">
+                                    <input type="text" id="itemName" list="productNames" placeholder="ដូចជា: ក្រែមលាបមុខ" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                                </div>
+                                <datalist id="productNames">
+                                </datalist>
+                            </div>
+                            <div>
+                                <label for="itemQuantity" class="block text-sm font-medium text-gray-700">ចំនួន</label>
+                                <input type="number" id="itemQuantity" value="1" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <div>
+                                <label for="itemPrice" class="block text-sm font-medium text-gray-700">តម្លៃ (ដុល្លារ)</label>
+                                <input type="number" id="itemPrice" placeholder="0.00" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button id="addItemBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm">
+                                បន្ថែមទំនិញ
+                            </button>
+                            <button id="clearFormBtn" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300 shadow-sm">
+                                ជម្រះទិន្នន័យ
+                            </button>
+                        </div>
+                    </div>
+
+                     <div class="bg-white rounded-lg p-6 shadow-md mt-6">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">បញ្ជីការលក់</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ល.រ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះទំនិញ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ចំនួន</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">តម្លៃ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ផលបូក</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">លុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesList" class="bg-white divide-y divide-gray-200"></tbody>
+                                <tfoot>
+                                    <tr class="bg-gray-50">
+                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-right text-base font-bold text-gray-900">សរុប:</td>
+                                        <td id="totalAmount" class="px-6 py-4 whitespace-nowrap text-left text-base font-bold text-gray-900">$0.00</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center md:justify-end space-x-4 mt-6 flex-wrap">
+                        <button id="saveAndPreviewBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-lg flex items-center mb-2 md:mb-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            រក្សាទុក និង មើលវិក្កយបត្រ
+                        </button>
+                        <button id="saveOnlyBtn" class="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-300 shadow-lg mb-2 md:mb-0">
+                            រក្សាទុកតែប៉ុណ្ណោះ
+                        </button>
+                        <button id="printBtn" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-lg mb-2 md:mb-0">
+                            បោះពុម្ពវិក្កយបត្រ
+                        </button>
+                        <button id="clearCurrentListBtn" class="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300 shadow-lg mb-2 md:mb-0">
+                            ជម្រះបញ្ជីបច្ចុប្បន្ន
+                        </button>
+                    </div>
+             </div>
+
+             <div id="updatePaymentView" class="hidden max-w-4xl mx-auto space-y-6">
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">ស្វែងរកវិក្កយបត្រដើម្បីកែប្រែការទូទាត់</h2>
+                    <div class="flex gap-4 flex-col md:flex-row">
+                        <input type="text" id="searchUpdateInvoiceInput" placeholder="បញ្ចូលលេខវិក្កយបត្រ (ឧ. C0000001)..." class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                        <button id="btnSearchUpdateInvoice" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300">ស្វែងរក</button>
+                    </div>
+                </div>
+
+                <div id="updatePaymentFormContainer" class="bg-white rounded-lg p-6 shadow-md hidden border-t-4 border-indigo-500">
+                    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">ព័ត៌មានអតិថិជន និង ការទូទាត់</h2>
+                    
+                    <div id="updatePaymentInvoiceDetails" class="text-sm text-gray-700 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                    </div>
+                    
+                    <input type="hidden" id="updatePaymentDocId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ជម្រើសការទូទាត់ថ្មី</label>
+                            <select id="updatePaymentMethodSelect" class="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="AC">AC</option>
+                                <option value="ABA">ABA</option>
+                                <option value="Wing">Wing</option>
+                                <option value="តាមអ្នកដឹក">តាមអ្នកដឹក</option>
+                                <option value="ធនាគារផ្សេង">ធនាគារផ្សេង (Custom)</option>
+                                <option value="មិនទាន់វេទឹកប្រាក់">មិនទាន់វេទឹកប្រាក់ (Unpaid)</option>
+                            </select>
+                        </div>
+                        <div id="updatePaymentOtherContainer" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">បញ្ជាក់ធនាគារផ្សេង</label>
+                            <input type="text" id="updatePaymentOtherInput" placeholder="ឈ្មោះធនាគារ..." class="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">លេខ TxD / កំណត់សម្គាល់ថ្មី</label>
+                            <input type="text" id="updatePaymentTxdInput" placeholder="បញ្ចូលលេខ TxD ថ្មី..." class="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-6 space-x-3 flex-wrap gap-y-2">
+                        <button id="btnCancelUpdatePayment" class="px-5 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
+                        <button id="btnSaveUpdatedPayment" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-sm font-medium">រក្សាទុកការកែប្រែ</button>
+                        <button id="btnSaveAndPreviewUpdatedPayment" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg រក្សាទុក និង មើលវិក្កយបត្រ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Receipt Settings View -->
+            <div id="receiptSettingsView" class="hidden max-w-6xl mx-auto space-y-6">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="bg-white rounded-lg p-6 shadow-md flex-1">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-6 border-b pb-2">Option Template (កំណត់រចនា)</h2>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">ចំណងជើងហាង</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsTitleSize" class="w-16 border rounded p-1 text-center" min="10" max="30">
+                                    <input type="checkbox" id="rsTitleBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsTitleBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">កាលបរិច្ឆេទ & អ្នកលក់</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsDateSize" class="w-16 border rounded p-1 text-center" min="8" max="20">
+                                    <input type="checkbox" id="rsDateBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsDateBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">ព័ត៌មានអតិថិជន</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsInfoSize" class="w-16 border rounded p-1 text-center" min="8" max="20">
+                                    <input type="checkbox" id="rsInfoBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsInfoBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">ក្បាលតារាងទំនិញ</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsHeaderSize" class="w-16 border rounded p-1 text-center" min="8" max="20">
+                                    <input type="checkbox" id="rsHeaderBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsHeaderBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">ទិន្នន័យក្នុងតារាង</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsRowSize" class="w-16 border rounded p-1 text-center" min="8" max="20">
+                                    <input type="checkbox" id="rsRowBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsRowBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">តម្លៃសរុបខាងក្រោម</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsTotalSize" class="w-16 border rounded p-1 text-center" min="10" max="24">
+                                    <input type="checkbox" id="rsTotalBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsTotalBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+                            
+                            <div class="border p-3 rounded-md bg-gray-50 sm:col-span-2">
+                                <label class="block font-semibold text-gray-800 mb-2">កំណត់សម្គាល់ (Note)</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsNoteSize" class="w-16 border rounded p-1 text-center" min="8" max="24">
+                                    <input type="checkbox" id="rsNoteBold" class="w-4 h-4 ml-2 text-indigo-600 border-gray-300 rounded">
+                                    <label for="rsNoteBold" class="text-sm text-gray-700">Bold</label>
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">គម្លាតបន្ទាត់ (Line Spacing)</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsLineHeight" step="0.1" class="w-16 border rounded p-1 text-center" min="1" max="3">
+                                </div>
+                            </div>
+
+                            <!-- NEW MARGIN CONTROLS -->
+                            <div class="border p-3 rounded-md bg-gray-50 sm:col-span-2">
+                                <label class="block font-semibold text-gray-800 mb-2">គម្លាតសងខាងពេលបោះពុម្ព (Print Margins)</label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-sm text-gray-600">ឆ្វេង (mm):</label>
+                                        <input type="number" id="rsMarginLeft" class="w-16 border rounded p-1 text-center" value="-6">
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-sm text-gray-600">ស្តាំ (mm):</label>
+                                        <input type="number" id="rsMarginRight" class="w-16 border rounded p-1 text-center" value="4">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end border-t pt-4">
+                            <button id="saveReceiptSettingsBtn" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition shadow-lg">រក្សាទុកការកំណត់</button>
+                        </div>
+                    </div>
+
+                    <!-- Demo Template -->
+                    <div class="bg-gray-100 rounded-lg p-6 shadow-md flex-1 flex flex-col items-center">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 w-full text-left">Demo Template</h2>
+                        <div class="bg-gray-300 p-4 rounded-md shadow-inner flex justify-center w-full overflow-x-auto min-h-[400px]">
+                            <div id="receiptDemoContainer" class="bg-white shadow" style="width: 80mm;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div id="storeOptionsView" class="hidden max-w-4xl mx-auto space-y-8">
+                     <div class="bg-white rounded-lg p-6 shadow-md space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-700">បន្ថែមហាងថ្មី</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="newStoreName" class="block text-sm font-medium text-gray-700">ឈ្មោះហាង</label>
+                                <input type="text" id="newStoreName" placeholder="ដូចជា: CCR Online Store" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button id="addNewStoreBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm">
+                                បន្ថែមហាង
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-md mt-6">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">បញ្ជីហាង</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះហាង</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">លុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storesList" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sellerOptionsView" class="hidden max-w-4xl mx-auto space-y-8">
+                     <div class="bg-white rounded-lg p-6 shadow-md space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-700">បន្ថែមអ្នកលក់ថ្មី</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="newSellerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអ្នកលក់</label>
+                                <input type="text" id="newSellerName" placeholder="ឈ្មោះអ្នកលក់..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button id="addNewSellerBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm">
+                                បន្ថែមអ្នកលក់
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-md mt-6">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">បញ្ជីឈ្មោះអ្នកលក់</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">លុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sellersList" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="addItemView" class="hidden max-w-4xl mx-auto space-y-8">
+                    <div class="bg-white rounded-lg p-6 shadow-md space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-700">បន្ថែមទំនិញថ្មី </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="newProductName" class="block text-sm font-medium text-gray-700">ឈ្មោះទំនិញ</label>
+                                <input type="text" id="newProductName" placeholder="ដូចជា: ក្រែមលាបមុខ" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <div>
+                                <label for="newProductPrice" class="block text-sm font-medium text-gray-700">តម្លៃ (ដុល្លារ)</label>
+                                <input type="number" id="newProductPrice" placeholder="0.00" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button id="addNewProductBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm">
+                                បន្ថែមទំនិញ
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-md mt-6">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">បញ្ជីទំនិញ</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះទំនិញ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">តម្លៃ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">លុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsList" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+             <div id="historyView" class="hidden max-w-4xl mx-auto space-y-8">
+                    <div class="bg-white rounded-lg p-6 shadow-md">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-gray-700">ប្រវត្តិទិន្នន័យ</h2>
+                            <button id="downloadDataBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-sm flex items-center gap-2">
+                                ទាញយកទិន្នន័យ
+                            </button>
+                        </div>
+                        <div class="mb-4 space-y-4 p-4 border rounded-md bg-gray-50">
+                            <h3 class="text-lg font-medium text-gray-700">តម្រងទិន្នន័យ (Filter)</h3>
+                             <div class="flex flex-col sm:flex-row gap-4">
+                                <div>
+                                    <label for="historyStartDate" class="block text-sm font-medium text-gray-700">ចាប់ពីថ្ងៃ</label>
+                                    <input type="date" id="historyStartDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                                </div>
+                                <div>
+                                    <label for="historyEndDate" class="block text-sm font-medium text-gray-700">ដល់ថ្ងៃ</label>
+                                    <input type="date" id="historyEndDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="searchQuery" class="block text-sm font-medium text-gray-700">ស្វែងរក</label>
+                                <input type="text" id="searchQuery" placeholder="ស្វែងរកតាមលេខវិក្កយបត្រ ឈ្មោះអតិថិជន លេខទូរស័ព្ទ ឬអាសយដ្ឋាន..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <div>
+                                <label for="historySortBy" class="block text-sm font-medium text-gray-700">រៀបតាម</label>
+                                <select id="historySortBy" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border p-1">
+                                    <option value="newest">កាលបរិច្ឆេទ (ថ្មីទៅចាស់)</option>
+                                    <option value="oldest">កាលបរិច្ឆេទ (ចាស់ទៅថ្មី)</option>
+                                    <option value="phnom_penh_first">ទីតាំង (ភ្នំពេញមុន)</option>
+                                    <option value="province_first">ទីតាំង (ខេត្តមុន)</option>
+                                    <option value="paid_first">ការទូទាត់ (បង់រួចមុន)</option>
+                                    <option value="unpaid_first">ការទូទាត់ (មិនទាន់បង់មុន)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mb-4 mt-6 flex-wrap gap-2">
+                            <div class="flex items-center space-x-2">
+                                <button id="selectAllBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition duration-300 shadow-sm flex items-center gap-2">
+                                    ជ្រើសរើសទាំងអស់
+                                </button>
+                                <button id="printSelectedBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm flex items-center gap-2 hidden">
+                                    បោះពុម្ពដែលបានជ្រើសរើស
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label for="itemsPerPageSelect" class="text-sm text-gray-700">បង្ហាញ:</label>
+                                <select id="itemsPerPageSelect" class="border-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 border">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                    <option value="1000">1000</option>
+                                </select>
+                            </div>
+                            <div id="selectedCountDisplay" class="text-sm text-gray-700 font-medium hidden whitespace-nowrap">0 វិក្កយបត្របានជ្រើសរើស</div>
+                        </div>
+
+                        <div id="paginationControls" class="flex justify-center items-center space-x-2 mt-6"></div>
+
+                        <div id="historyListContainer" class="space-y-4 mt-6">
+                            <p class="text-center text-gray-500">កំពុងផ្ទុកប្រវត្តិទិន្នន័យ...</p>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+    <!-- Offscreen container for image generation -->
+    <div id="offscreenInvoiceContainer" style="position: fixed; left: 0; top: 0; z-index: -9999; display: none; width: 80mm; background-color: #fff; color: #000;"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        setLogLevel('debug');
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDx53uucVLn2qZpKHgm4Zfmn0oq7IqWKDE",
+            authDomain: "my-online-sale-re.firebaseapp.com",
+            projectId: "my-online-sale-re",
+            storageBucket: "my-online-sale-re.firebasestorage.app",
+            messagingSenderId: "897696868123",
+            appId: "1:897696868123:web:a1c31ba969f90ababb15be",
+            measurementId: "G-RP5KG6GY4Y"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let unsubscribeInvoices = null;
+        let unsubscribeProducts = null;
+        let unsubscribeStores = null;
+        let unsubscribeSellers = null; 
+
+        let historyInvoices = [];
+        let products = [];
+        let stores = [];
+        let sellers = []; 
+        let currentInvoiceItems = [];
+        let isAuthReady = false;
+        
+        let itemsPerPage = 10; 
+        let currentPage = 1;
+        let selectedInvoiceIds = new Set(); 
+
+        const defaultReceiptSettings = {
+            titleSize: 16, titleBold: true,
+            dateSize: 14, dateBold: true,
+            infoSize: 14, infoBold: false,
+            headerSize: 14, headerBold: true,
+            rowSize: 14, rowBold: false,
+            totalSize: 14, totalBold: true,
+            noteSize: 14, noteBold: true,
+            lineHeight: 1.2,
+            marginLeft: -6,    // Default margins
+            marginRight: 4
+        };
+        let receiptSettings = JSON.parse(localStorage.getItem('receiptSettings')) || defaultReceiptSettings;
+
+        const mainApp = document.getElementById('mainApp');
+        const loadingView = document.getElementById('loadingView');
+        
+        let app = null;
+        
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalOkBtn = document.getElementById('modalOkBtn');
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmYesBtn = document.getElementById('confirmYesBtn');
+        const confirmNoBtn = document.getElementById('confirmNoBtn');
+        const modalRichContent = document.getElementById('modalRichContent');
+
+        const previewModal = document.getElementById('previewModal');
+        const invoicePreviewContent = document.getElementById('invoicePreviewContent');
+        const previewPrintBtn = document.getElementById('previewPrintBtn');
+        const previewCloseBtn = document.getElementById('previewCloseBtn');
+        const previewCopyBtn = document.getElementById('previewCopyBtn'); 
+
+        const editModal = document.getElementById('editModal');
+        const editDocIdInput = document.getElementById('editDocId');
+        const editCustomerNameInput = document.getElementById('editCustomerName');
+        const editCustomerPhoneInput = document.getElementById('editCustomerPhone');
+        const editCustomerAddressInput = document.getElementById('editCustomerAddress');
+        const editDeliveryOptionSelect = document.getElementById('editDeliveryOption');
+        const editDeliveryFeeInput = document.getElementById('editDeliveryFee');
+        const editSaveBtn = document.getElementById('editSaveBtn');
+        const editCancelBtn = document.getElementById('editCancelBtn');
+        const editStoreNameSelect = document.getElementById('editStoreName');
+        const editPaymentOptionSelect = document.getElementById('editPaymentOptionSelect');
+        const editOtherPaymentContainer = document.getElementById('editOtherPaymentContainer');
+        const editOtherPaymentInput = document.getElementById('editOtherPaymentInput');
+        const editPaymentNotesInput = document.getElementById('editPaymentNotes');
+        const editSellerNameSelect = document.getElementById('editSellerName');
+        const editGeneralNoteInput = document.getElementById('editGeneralNote');
+
+        const updatePaymentView = document.getElementById('updatePaymentView');
+        const searchUpdateInvoiceInput = document.getElementById('searchUpdateInvoiceInput');
+        const btnSearchUpdateInvoice = document.getElementById('btnSearchUpdateInvoice');
+        const updatePaymentFormContainer = document.getElementById('updatePaymentFormContainer');
+        const updatePaymentInvoiceDetails = document.getElementById('updatePaymentInvoiceDetails');
+        const updatePaymentDocId = document.getElementById('updatePaymentDocId');
+        const updatePaymentMethodSelect = document.getElementById('updatePaymentMethodSelect');
+        const updatePaymentOtherContainer = document.getElementById('updatePaymentOtherContainer');
+        const updatePaymentOtherInput = document.getElementById('updatePaymentOtherInput');
+        const updatePaymentTxdInput = document.getElementById('updatePaymentTxdInput');
+        const btnSaveUpdatedPayment = document.getElementById('btnSaveUpdatedPayment');
+        const btnCancelUpdatePayment = document.getElementById('btnCancelUpdatePayment');
+        const btnSaveAndPreviewUpdatedPayment = document.getElementById('btnSaveAndPreviewUpdatedPayment'); 
+
+        const dashboardView = document.getElementById('dashboardView');
+        const customerInfoView = document.getElementById('customerInfoView');
+        const addItemView = document.getElementById('addItemView');
+        const storeOptionsView = document.getElementById('storeOptionsView');
+        const sellerOptionsView = document.getElementById('sellerOptionsView'); 
+        const historyView = document.getElementById('historyView');
+        const receiptSettingsView = document.getElementById('receiptSettingsView'); 
+        
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const historyStartDateInput = document.getElementById('historyStartDate');
+        const historyEndDateInput = document.getElementById('historyEndDate');
+        const customerNameInput = document.getElementById('customerName');
+        const customerPhoneInput = document.getElementById('customerPhone');
+        const customerAddressInput = document.getElementById('customerAddress');
+
+        const storeSelect = document.getElementById('storeSelect');
+        const paymentSelect = document.getElementById('paymentSelect');
+        const sellerCheckboxContainer = document.getElementById('sellerCheckboxContainer');
+
+        const vetRadio = document.getElementById('vetRadio');
+        const jtRadio = document.getElementById('jtRadio');
+        const phnompenhRadio = document.getElementById('phnompenhRadio');
+        const otherPaymentMethodInput = document.getElementById('otherPaymentMethod');
+        const otherPaymentMethodContainer = document.getElementById('otherPaymentMethodContainer');
+        const paymentNotesInput = document.getElementById('paymentNotes');
+        const deliveryFeeInput = document.getElementById('deliveryFee');
+        
+        const enableGeneralNoteCheckbox = document.getElementById('enableGeneralNote');
+        const generalNoteInputContainer = document.getElementById('generalNoteInputContainer');
+        const generalNoteInput = document.getElementById('generalNote');
+
+        const itemNameInput = document.getElementById('itemName');
+        const productNamesDatalist = document.getElementById('productNames');
+        const itemQuantityInput = document.getElementById('itemQuantity');
+        const itemPriceInput = document.getElementById('itemPrice');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const clearFormBtn = document.getElementById('clearFormBtn');
+        const salesListBody = document.getElementById('salesList');
+        const historyListContainer = document.getElementById('historyListContainer');
+        const totalAmountDisplay = document.getElementById('totalAmount');
+        const printBtn = document.getElementById('printBtn');
+        const saveOnlyBtn = document.getElementById('saveOnlyBtn'); 
+        const saveAndPreviewBtn = document.getElementById('saveAndPreviewBtn');
+        const clearCurrentListBtn = document.getElementById('clearCurrentListBtn');
+        const downloadDataBtn = document.getElementById('downloadDataBtn');
+        const searchQueryInput = document.getElementById('searchQuery');
+        const historySortBySelect = document.getElementById('historySortBy');
+        const itemsPerPageSelect = document.getElementById('itemsPerPageSelect');
+        
+        const totalSalesCountDisplay = document.getElementById('totalSalesCount');
+        const totalRevenueDisplay = document.getElementById('totalRevenue');
+        const totalDeliveryFeeDisplay = document.getElementById('totalDeliveryFee');
+        
+        const dashboardSellerFilter = document.getElementById('dashboardSellerFilter');
+
+        const newProductNameInput = document.getElementById('newProductName');
+        const newProductPriceInput = document.getElementById('newProductPrice');
+        const addNewProductBtn = document.getElementById('addNewProductBtn');
+        const productsListBody = document.getElementById('productsList');
+
+        const newStoreNameInput = document.getElementById('newStoreName');
+        const addNewStoreBtn = document.getElementById('addNewStoreBtn');
+        const storesListBody = document.getElementById('storesList');
+
+        const newSellerNameInput = document.getElementById('newSellerName');
+        const addNewSellerBtn = document.getElementById('addNewSellerBtn');
+        const sellersListBody = document.getElementById('sellersList');
+
+        const dashboardNavBtn = document.getElementById('dashboardNavBtn');
+        const customerInfoNavBtn = document.getElementById('customerInfoNavBtn');
+        const addItemNavBtn = document.getElementById('addItemNavBtn');
+        const storeOptionsNavBtn = document.getElementById('storeOptionsNavBtn');
+        const sellerOptionsNavBtn = document.getElementById('sellerOptionsNavBtn');
+        const updatePaymentNavBtn = document.getElementById('updatePaymentNavBtn'); 
+        const receiptSettingsNavBtn = document.getElementById('receiptSettingsNavBtn'); 
+        const historyNavBtn = document.getElementById('historyNavBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const lightIcon = document.getElementById('lightIcon');
+        const darkIcon = document.getElementById('darkIcon');
+
+        const printSelectedBtn = document.getElementById('printSelectedBtn');
+        const selectedCountDisplay = document.getElementById('selectedCountDisplay');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const paginationControls = document.getElementById('paginationControls');
+        const dashboardDeliveryFilter = document.getElementById('dashboardDeliveryFilter');
+        const dashboardPaymentStatusFilter = document.getElementById('dashboardPaymentStatusFilter');
+
+        const rsTitleSize = document.getElementById('rsTitleSize');
+        const rsTitleBold = document.getElementById('rsTitleBold');
+        const rsDateSize = document.getElementById('rsDateSize');
+        const rsDateBold = document.getElementById('rsDateBold');
+        const rsInfoSize = document.getElementById('rsInfoSize');
+        const rsInfoBold = document.getElementById('rsInfoBold');
+        const rsHeaderSize = document.getElementById('rsHeaderSize');
+        const rsHeaderBold = document.getElementById('rsHeaderBold');
+        const rsRowSize = document.getElementById('rsRowSize');
+        const rsRowBold = document.getElementById('rsRowBold');
+        const rsTotalSize = document.getElementById('rsTotalSize');
+        const rsTotalBold = document.getElementById('rsTotalBold');
+        const rsNoteSize = document.getElementById('rsNoteSize');
+        const rsNoteBold = document.getElementById('rsNoteBold');
+        const rsLineHeight = document.getElementById('rsLineHeight');
+        const rsMarginLeft = document.getElementById('rsMarginLeft');
+        const rsMarginRight = document.getElementById('rsMarginRight');
+        const saveReceiptSettingsBtn = document.getElementById('saveReceiptSettingsBtn');
+        
+        let confirmationCallback = null;
+
+        const showMessage = (message) => {
+            modalMessage.textContent = message;
+            modalRichContent.innerHTML = ''; 
+            messageModal.style.display = 'flex';
+        };
+        const showRichMessage = (title, htmlContent) => {
+            modalMessage.textContent = title;
+            modalRichContent.innerHTML = htmlContent;
+            messageModal.style.display = 'flex';
+        };
+        const showConfirmation = (message, callback) => {
+            confirmMessage.textContent = message;
+            confirmationCallback = callback;
+            confirmModal.style.display = 'flex';
+        };
+
+        const generateConflictMessageHTML = (conflictingInvoice) => {
+            const total = conflictingInvoice.items.reduce((s, i) => s + i.total, 0) + (conflictingInvoice.deliveryFee || 0);
+            return `
+                <div class="space-y-2 mt-2">
+                    <p class="text-red-600 font-bold text-center">លេខ TxD នេះត្រូវបានប្រើប្រាស់រួចហើយ!</p>
+                    <div class="bg-red-50 p-4 rounded-md border border-red-200 text-sm text-left text-gray-800 shadow-inner space-y-1">
+                        <p><strong class="w-24 inline-block text-gray-600">អតិថិជន:</strong> <span class="font-semibold">${conflictingInvoice.customerName}</span></p>
+                        <p><strong class="w-24 inline-block text-gray-600">ទូរស័ព្ទ:</strong> <span class="font-semibold">${conflictingInvoice.customerPhone}</span></p>
+                        <p><strong class="w-24 inline-block text-gray-600">អាសយដ្ឋាន:</strong> <span class="font-semibold">${conflictingInvoice.customerAddress}</span></p>
+                        <p><strong class="w-24 inline-block text-gray-600">តម្លៃសរុប:</strong> <span class="font-bold text-green-700">$${total.toFixed(2)}</span></p>
+                        <p><strong class="w-24 inline-block text-gray-600">វិក្កយបត្រ:</strong> <span class="font-semibold">${conflictingInvoice.invoiceNumber}</span></p>
+                    </div>
+                </div>
+            `;
+        };
+
+        const cleanPhoneNumber = (numberString) => (numberString || '').replace(/\D/g, '');
+        const formatPhoneNumber = (input) => {
+            const originalValue = input.value;
+            const originalCursorPos = input.selectionStart;
+            const digitsBeforeCursor = originalValue.substring(0, originalCursorPos).replace(/\D/g, '').length;
+            let cleanNumber = cleanPhoneNumber(originalValue);
+            let prependedZero = false;
+            if (cleanNumber.length > 0 && cleanNumber[0] !== '0') {
+                 if (cleanNumber[0] !== '0') {
+                    cleanNumber = '0' + cleanNumber;
+                    prependedZero = true;
+                 }
+            }
+            cleanNumber = cleanNumber.substring(0, 10);
+            let desiredDigitPos = digitsBeforeCursor;
+            if (prependedZero && originalCursorPos > 0) desiredDigitPos = digitsBeforeCursor + 1;
+            let formattedNumber = '';
+            if (cleanNumber.length > 0) formattedNumber += cleanNumber.substring(0, 3);
+            if (cleanNumber.length > 3) formattedNumber += ' ' + cleanNumber.substring(3, 6);
+            if (cleanNumber.length > 6) formattedNumber += ' ' + cleanNumber.substring(6, 10);
+            
+            let newCursorPos = 0;
+            let digitsCount = 0;
+            for(let i = 0; i < formattedNumber.length; i++) {
+                if (formattedNumber[i].match(/\d/)) digitsCount++;
+                if (digitsCount === desiredDigitPos) { newCursorPos = i + 1; break; }
+                if (i === formattedNumber.length - 1) newCursorPos = formattedNumber.length;
+            }
+            newCursorPos = Math.min(newCursorPos, formattedNumber.length);
+            input.value = formattedNumber;
+            input.setSelectionRange(newCursorPos, newCursorPos);
+        };
+
+        if (enableGeneralNoteCheckbox) {
+            enableGeneralNoteCheckbox.addEventListener('change', () => {
+                if (enableGeneralNoteCheckbox.checked) {
+                    generalNoteInputContainer.classList.remove('hidden');
+                    generalNoteInput.focus();
+                } else {
+                    generalNoteInputContainer.classList.add('hidden');
+                    generalNoteInput.value = '';
+                }
+            });
+        }
+        
+        const populateMainStoreSelect = () => {
+            if (!storeSelect) return;
+            storeSelect.innerHTML = '<option value="វិក្កយបត្រ">វិក្កយបត្រ (Default)</option>';
+            const sortedStores = [...stores].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedStores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.name;
+                option.textContent = store.name;
+                storeSelect.appendChild(option);
+            });
+        };
+
+        const renderSellerCheckboxes = () => {
+            sellerCheckboxContainer.innerHTML = '';
+            if (sellers.length === 0) {
+                sellerCheckboxContainer.innerHTML = '<p class="text-sm text-gray-500 italic">សូមបន្ថែមអ្នកលក់ក្នុងម៉ឺនុយ "ជម្រើសអ្នកលក់"</p>';
+                return;
+            }
+            const sortedSellers = [...sellers].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedSellers.forEach(seller => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `seller_${seller.id}`;
+                checkbox.dataset.sellerName = seller.name;
+                checkbox.className = 'seller-select-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500';
+                const label = document.createElement('label');
+                label.htmlFor = `seller_${seller.id}`;
+                label.className = 'ml-2 block text-sm text-gray-900 cursor-pointer';
+                label.textContent = seller.name;
+                checkbox.addEventListener('change', (e) => handleSellerSelection(e.target));
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                sellerCheckboxContainer.appendChild(div);
+            });
+        };
+
+        const handleSellerSelection = (selectedCheckbox) => {
+            const allSellerCheckboxes = document.querySelectorAll('.seller-select-checkbox');
+            allSellerCheckboxes.forEach(checkbox => {
+                if (checkbox !== selectedCheckbox) checkbox.checked = false;
+            });
+        };
+
+        const getStoreName = () => {
+            return storeSelect ? storeSelect.value : 'វិក្កយបត្រ';
+        };
+
+        const getSellerName = () => {
+            const checkedBox = document.querySelector('.seller-select-checkbox:checked');
+            return checkedBox ? checkedBox.dataset.sellerName : '';
+        };
+
+        const setStoreSelection = (storeName) => {
+             if (storeSelect) storeSelect.value = storeName || 'វិក្កយបត្រ';
+        };
+
+        const setSellerSelection = (sellerName) => {
+             const allSellerCheckboxes = document.querySelectorAll('.seller-select-checkbox');
+             allSellerCheckboxes.forEach(checkbox => {
+                 checkbox.checked = (checkbox.dataset.sellerName === sellerName);
+             });
+        };
+
+        const fillCustomerData = (invoice) => {
+            customerNameInput.value = invoice.customerName || '';
+            customerAddressInput.value = invoice.customerAddress || '';
+            customerPhoneInput.value = invoice.customerPhone || '';
+            formatPhoneNumber(customerPhoneInput); 
+
+            vetRadio.checked = (invoice.deliveryOption === 'VET');
+            jtRadio.checked = (invoice.deliveryOption === 'J&T');
+            phnompenhRadio.checked = (invoice.deliveryOption === 'ភ្នំពេញ');
+            
+            if (invoice.sellerName) setSellerSelection(invoice.sellerName);
+        };
+
+        const populateProductDatalist = () => {
+            productNamesDatalist.innerHTML = '';
+            const allProductNames = new Set();
+            products.forEach(product => { if (product.name) allProductNames.add(product.name); });
+            allProductNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                productNamesDatalist.appendChild(option);
+            });
+        };
+
+        const populateDashboardSellerFilter = () => {
+             dashboardSellerFilter.innerHTML = '';
+             const allOption = document.createElement('option');
+             allOption.value = 'All';
+             allOption.textContent = 'ទាំងអស់';
+             dashboardSellerFilter.appendChild(allOption);
+             
+             const sortedSellers = [...sellers].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+             sortedSellers.forEach(seller => {
+                const option = document.createElement('option');
+                option.value = seller.name;
+                option.textContent = seller.name;
+                dashboardSellerFilter.appendChild(option);
+             });
+        }
+        
+        const populateStoreSelect = () => {
+            editStoreNameSelect.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = 'វិក្កយបត្រ';
+            defaultOption.textContent = 'វិក្កយបត្រ (Default)';
+            editStoreNameSelect.appendChild(defaultOption);
+            const sortedStores = [...stores].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedStores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.name;
+                option.textContent = store.name;
+                editStoreNameSelect.appendChild(option);
+            });
+        };
+
+        const populateSellerSelect = () => {
+            editSellerNameSelect.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'គ្មាន';
+            editSellerNameSelect.appendChild(defaultOption);
+            const sortedSellers = [...sellers].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedSellers.forEach(seller => {
+                const option = document.createElement('option');
+                option.value = seller.name;
+                option.textContent = seller.name;
+                editSellerNameSelect.appendChild(option);
+            });
+        }
+
+        const getDeliveryOptions = () => {
+            if (vetRadio.checked) return 'VET';
+            if (jtRadio.checked) return 'J&T';
+            if (phnompenhRadio.checked) return 'ភ្នំពេញ';
+            return 'មិនបានជ្រើសរើស';
+        };
+
+        const getPaymentOptions = () => {
+            const method = paymentSelect ? paymentSelect.value : 'មិនទាន់វេទឹកប្រាក់';
+            if (method === 'ធនាគារផ្សេង') {
+                return (otherPaymentMethodInput && otherPaymentMethodInput.value.trim()) || 'ធនាគារផ្សេង';
+            }
+            return method;
+        };
+        
+        const clearFormInputs = () => {
+            customerNameInput.value = '';
+            customerPhoneInput.value = '';
+            customerAddressInput.value = '';
+            vetRadio.checked = false;
+            jtRadio.checked = false;
+            phnompenhRadio.checked = false;
+            if (storeSelect) storeSelect.value = 'វិក្កយបត្រ';
+            document.querySelectorAll('.seller-select-checkbox').forEach(cb => cb.checked = false); 
+            
+            if (paymentSelect) paymentSelect.value = 'មិនទាន់វេទឹកប្រាក់';
+            if (otherPaymentMethodContainer) otherPaymentMethodContainer.classList.add('hidden');
+            if (otherPaymentMethodInput) otherPaymentMethodInput.value = ''; 
+            paymentNotesInput.value = '';
+            deliveryFeeInput.value = '';
+            itemNameInput.value = '';
+            itemQuantityInput.value = '1';
+            itemPriceInput.value = '';
+            
+            enableGeneralNoteCheckbox.checked = false;
+            generalNoteInputContainer.classList.add('hidden');
+            generalNoteInput.value = '';
+
+            itemNameInput.focus();
+        };
+
+        const addItem = () => {
+            const name = itemNameInput.value.trim();
+            const quantity = parseFloat(itemQuantityInput.value);
+            const price = parseFloat(itemPriceInput.value);
+            const deliveryFee = parseFloat(deliveryFeeInput.value) || 0;
+
+            if (!name || isNaN(quantity) || isNaN(price) || quantity <= 0 || price <= 0) {
+                showMessage('សូមបញ្ចូលព័ត៌មានទំនិញឲ្យបានគ្រប់គ្រាន់ និងត្រឹមត្រូវ។');
+                return;
+            }
+
+            const total = quantity * price;
+            currentInvoiceItems.push({
+                name, quantity, price, total,
+                customerName: customerNameInput.value.trim(),
+                customerPhone: customerPhoneInput.value.trim(),
+                customerAddress: customerAddressInput.value.trim(),
+                deliveryOption: getDeliveryOptions(),
+                paymentOption: getPaymentOptions(),
+                paymentNotes: paymentNotesInput.value.trim(),
+                deliveryFee: deliveryFee,
+                storeName: getStoreName(),
+                sellerName: getSellerName(), 
+                generalNote: enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '', 
+                timestamp: new Date()
+            });
+            itemNameInput.value = '';
+            itemQuantityInput.value = '1';
+            itemPriceInput.value = '';
+            itemNameInput.focus();
+            renderSalesList();
+        };
+        
+        const addNewProduct = async () => {
+            const productName = newProductNameInput.value.trim();
+            const productPrice = parseFloat(newProductPriceInput.value);
+            if (!productName || isNaN(productPrice) || productPrice <= 0) {
+                showMessage('សូមបញ្ចូលឈ្មោះទំនិញ និងតម្លៃឱ្យបានត្រឹមត្រូវ។'); return;
+            }
+            try {
+                const existingProduct = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+                if (existingProduct) { showMessage('ទំនិញនេះមានរួចហើយនៅក្នុងបញ្ជី។'); return; }
+                await addDoc(collection(db, `artifacts/${appId}/public/data/products`), {
+                    name: productName, price: productPrice, timestamp: new Date()
+                });
+                showMessage('បានបន្ថែមទំនិញថ្មីដោយជោគជ័យ។');
+                newProductNameInput.value = ''; newProductPriceInput.value = '';
+            } catch (e) { console.error(e); showMessage('មានបញ្ហាក្នុងការបន្ថែមទំនិញថ្មី។'); }
+        };
+
+        const deleteProductFromDB = (e) => {
+            const docId = e.currentTarget.dataset.docId;
+            showConfirmation('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?', async (result) => {
+                if (result) {
+                    try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/products`, docId)); showMessage('បានលុបទំនិញដោយជោគជ័យ។'); }
+                    catch (e) { showMessage('មានបញ្ហាក្នុងការលុបទិន្នន័យ។'); }
+                }
+            });
+        };
+
+        const addNewStore = async () => {
+            const storeName = newStoreNameInput.value.trim();
+            if (!storeName) { showMessage('សូមបញ្ចូលឈ្មោះហាង។'); return; }
+            try {
+                const existingStore = stores.find(s => s.name.toLowerCase() === storeName.toLowerCase());
+                if (existingStore) { showMessage('ឈ្មោះហាងនេះមានរួចហើយនៅក្នុងបញ្ជី។'); return; }
+                await addDoc(collection(db, `artifacts/${appId}/public/data/stores`), { name: storeName, timestamp: new Date() });
+                showMessage('បានបន្ថែមហាងថ្មីដោយជោគជ័យ។');
+                newStoreNameInput.value = '';
+            } catch (e) { showMessage('មានបញ្ហាក្នុងការបន្ថែមហាងថ្មី។'); }
+        };
+
+        const deleteStoreFromDB = (e) => {
+            const docId = e.currentTarget.dataset.docId;
+            showConfirmation('តើអ្នកពិតជាចង់លុបឈ្មោះហាងនេះមែនទេ?', async (result) => {
+                if (result) {
+                    try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/stores`, docId)); showMessage('បានលុបឈ្មោះហាងដោយជោគជ័យ។'); }
+                    catch (e) { showMessage('មានបញ្ហាក្នុងការលុបទិន្នន័យ។'); }
+                }
+            });
+        };
+
+        const addNewSeller = async () => {
+            const sellerName = newSellerNameInput.value.trim();
+            if (!sellerName) { showMessage('សូមបញ្ចូលឈ្មោះអ្នកលក់។'); return; }
+            try {
+                const existingSeller = sellers.find(s => s.name.toLowerCase() === sellerName.toLowerCase());
+                if (existingSeller) { showMessage('ឈ្មោះអ្នកលក់នេះមានរួចហើយនៅក្នុងបញ្ជី។'); return; }
+                await addDoc(collection(db, `artifacts/${appId}/public/data/sellers`), { name: sellerName, timestamp: new Date() });
+                showMessage('បានបន្ថែមអ្នកលក់ថ្មីដោយជោគជ័យ។');
+                newSellerNameInput.value = '';
+            } catch (e) { showMessage('មានបញ្ហាក្នុងការបន្ថែមអ្នកលក់ថ្មី។'); }
+        };
+
+        const deleteSellerFromDB = (e) => {
+             const docId = e.currentTarget.dataset.docId;
+            showConfirmation('តើអ្នកពិតជាចង់លុបឈ្មោះអ្នកលក់នេះមែនទេ?', async (result) => {
+                if (result) {
+                    try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/sellers`, docId)); showMessage('បានលុបឈ្មោះអ្នកលក់ដោយជោគជ័យ។'); }
+                    catch (e) { showMessage('មានបញ្ហាក្នុងការលុបទិន្នន័យ។'); }
+                }
+            });
+        };
+
+        const renderProductsList = () => {
+            productsListBody.innerHTML = '';
+            const sortedProducts = [...products].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${product.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${product.price.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="delete-product-db text-red-600 hover:text-red-900" data-doc-id="${product.id}">លុប</button>
+                    </td>
+                `;
+                productsListBody.appendChild(row);
+            });
+            document.querySelectorAll('.delete-product-db').forEach(button => button.addEventListener('click', deleteProductFromDB));
+        };
+
+        const renderStoresManagementList = () => {
+            storesListBody.innerHTML = '';
+            const sortedStores = [...stores].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedStores.forEach(store => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${store.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="delete-store-db text-red-600 hover:text-red-900" data-doc-id="${store.id}">លុប</button>
+                    </td>
+                `;
+                storesListBody.appendChild(row);
+            });
+            document.querySelectorAll('.delete-store-db').forEach(button => button.addEventListener('click', deleteStoreFromDB));
+        };
+
+        const renderSellersManagementList = () => {
+            sellersListBody.innerHTML = '';
+            const sortedSellers = [...sellers].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'km'));
+            sortedSellers.forEach(seller => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${seller.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="delete-seller-db text-red-600 hover:text-red-900" data-doc-id="${seller.id}">លុប</button>
+                    </td>
+                `;
+                sellersListBody.appendChild(row);
+            });
+            document.querySelectorAll('.delete-seller-db').forEach(button => button.addEventListener('click', deleteSellerFromDB));
+        }
+
+        const openEditModal = async (event) => {
+            const docId = event.currentTarget.dataset.docId;
+            const invoice = historyInvoices.find(inv => inv.id === docId);
+            if (!invoice) { showMessage('មិនអាចរកវិក្កយបត្រនេះឃើញទេ។'); return; }
+
+            editDocIdInput.value = docId;
+            editCustomerNameInput.value = invoice.customerName || '';
+            editCustomerPhoneInput.value = invoice.customerPhone || '';
+            editCustomerAddressInput.value = invoice.customerAddress || '';
+            
+            populateStoreSelect();
+            editStoreNameSelect.value = invoice.storeName || 'វិក្កយបត្រ';
+            
+            populateSellerSelect();
+            editSellerNameSelect.value = invoice.sellerName || '';
+
+            editGeneralNoteInput.value = invoice.generalNote || '';
+            
+            const paymentOptionValue = invoice.paymentOption || 'មិនទាន់វេទឹកប្រាក់';
+            const predefinedOptions = ['AC', 'ABA', 'Wing', 'តាមអ្នកដឹក', 'មិនទាន់វេទឹកប្រាក់'];
+            if (predefinedOptions.includes(paymentOptionValue)) {
+                editPaymentOptionSelect.value = paymentOptionValue;
+                editOtherPaymentContainer.classList.add('hidden');
+                editOtherPaymentInput.value = '';
+            } else {
+                editPaymentOptionSelect.value = 'ធនាគារផ្សេង';
+                editOtherPaymentInput.value = paymentOptionValue;
+                editOtherPaymentContainer.classList.remove('hidden');
+            }
+            editPaymentNotesInput.value = invoice.paymentNotes || '';
+            editDeliveryOptionSelect.value = invoice.deliveryOption || 'មិនបានជ្រើសរើស';
+            editDeliveryFeeInput.value = (invoice.deliveryFee || 0).toFixed(2);
+            editModal.style.display = 'flex';
+        };
+
+        const saveEditedInvoice = async () => {
+            const docId = editDocIdInput.value;
+            const updatedCustomerName = editCustomerNameInput.value.trim();
+            const updatedCustomerPhone = editCustomerPhoneInput.value.trim();
+            const updatedCustomerAddress = editCustomerAddressInput.value.trim();
+            const updatedDeliveryOption = editDeliveryOptionSelect.value;
+            const updatedDeliveryFee = parseFloat(editDeliveryFeeInput.value) || 0;
+            const updatedStoreName = editStoreNameSelect.value;
+            const updatedPaymentNotes = editPaymentNotesInput.value.trim();
+            
+            const updatedSellerName = editSellerNameSelect.value;
+            const updatedGeneralNote = editGeneralNoteInput.value.trim();
+
+            let finalPaymentOption;
+            if (editPaymentOptionSelect.value === 'ធនាគារផ្សេង') {
+                finalPaymentOption = editOtherPaymentInput.value.trim() || 'ធនាគារផ្សេង';
+            } else {
+                finalPaymentOption = editPaymentOptionSelect.value;
+            }
+
+            if (!updatedCustomerName || !updatedCustomerPhone || !updatedCustomerAddress) {
+                showMessage('សូមបំពេញឈ្មោះ លេខទូរស័ព្ទ និងអាសយដ្ឋាន។'); return;
+            }
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/invoices`, docId);
+                if (updatedPaymentNotes.length > 5) {
+                     const conflictingInvoice = historyInvoices.find(inv => 
+                        (inv.paymentNotes || '').trim().toLowerCase() === updatedPaymentNotes.toLowerCase() && inv.id !== docId
+                    );
+                    if (conflictingInvoice) {
+                        showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflictingInvoice) + `
+                            <div class="flex justify-center mt-4">
+                                <button onclick="document.getElementById('messageModal').style.display='none'" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">បោះបង់</button>
+                                <button id="confirmEditSaveBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">បន្តរក្សាទុក</button>
+                            </div>
+                        `);
+                        
+                        document.getElementById('confirmEditSaveBtn').onclick = async () => {
+                             document.getElementById('messageModal').style.display = 'none';
+                             await proceedEdit();
+                        };
+                        return;
+                    }
+                }
+                
+                await proceedEdit();
+
+                async function proceedEdit() {
+                    await updateDoc(docRef, {
+                        customerName: updatedCustomerName,
+                        customerPhone: updatedCustomerPhone,
+                        customerAddress: updatedCustomerAddress,
+                        deliveryOption: updatedDeliveryOption,
+                        deliveryFee: updatedDeliveryFee,
+                        storeName: updatedStoreName,
+                        sellerName: updatedSellerName,
+                        generalNote: updatedGeneralNote,
+                        paymentOption: finalPaymentOption, 
+                        paymentNotes: updatedPaymentNotes,
+                        updatedAt: new Date()
+                    });
+                    editModal.style.display = 'none';
+                    showMessage('បានកែប្រែព័ត៌មានអតិថិជនដោយជោគជ័យ។');
+                }
+                
+            } catch (e) { showMessage('មានបញ្ហាក្នុងការរក្សាទុកការកែប្រែ។'); }
+        };
+
+        const deleteItemFromDB = async (e) => {
+            const docId = e.currentTarget.dataset.docId;
+            showConfirmation('តើអ្នកពិតជាចង់លុបវិក្កយបត្រនេះមែនទេ?', async (result) => {
+                if (result) {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId));
+                    showMessage('បានលុបវិក្កយបត្រដោយជោគជ័យ។');
+                }
+            });
+        };
+
+        const deleteLocalItem = (e) => {
+            const index = e.target.dataset.index;
+            currentInvoiceItems.splice(index, 1);
+            renderSalesList();
+        };
+
+        const renderSalesList = () => {
+            salesListBody.innerHTML = '';
+            let totalAmount = 0;
+            currentInvoiceItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${item.price.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${item.total.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="delete-item-local text-red-600 hover:text-red-900" data-index="${index}">លុប</button>
+                    </td>
+                `;
+                salesListBody.appendChild(row);
+                totalAmount += item.total;
+            });
+            const deliveryFee = parseFloat(deliveryFeeInput.value) || 0;
+            totalAmountDisplay.textContent = `$${(totalAmount + deliveryFee).toFixed(2)}`;
+            document.querySelectorAll('.delete-item-local').forEach(button => button.addEventListener('click', deleteLocalItem));
+        };
+        
+        const selectAllInvoices = () => {
+            const visibleCheckboxes = document.querySelectorAll('.invoice-select-checkbox');
+            const allVisibleSelected = Array.from(visibleCheckboxes).every(checkbox => checkbox.checked);
+            
+            visibleCheckboxes.forEach(checkbox => {
+                checkbox.checked = !allVisibleSelected;
+                const invoiceId = checkbox.dataset.invoiceId;
+                if (checkbox.checked) {
+                    selectedInvoiceIds.add(invoiceId);
+                } else {
+                    selectedInvoiceIds.delete(invoiceId);
+                }
+            });
+            updateSelectionDisplay();
+            
+            selectAllBtn.textContent = !allVisibleSelected ? 'ជម្រះការជ្រើសរើស' : 'ជ្រើសរើសទាំងអស់';
+            selectAllBtn.classList.toggle('bg-gray-300', allVisibleSelected);
+            selectAllBtn.classList.toggle('text-gray-800', allVisibleSelected);
+            selectAllBtn.classList.toggle('bg-yellow-500', !allVisibleSelected);
+            selectAllBtn.classList.toggle('text-white', !allVisibleSelected);
+        };
+
+        const updateSelectionDisplay = () => {
+            const count = selectedInvoiceIds.size;
+            selectedCountDisplay.textContent = `${count} វិក្កយបត្របានជ្រើសរើស`;
+            
+            if (count > 0) {
+                printSelectedBtn.classList.remove('hidden');
+                selectedCountDisplay.classList.remove('hidden');
+            } else {
+                printSelectedBtn.classList.add('hidden');
+                selectedCountDisplay.classList.add('hidden');
+            }
+        };
+
+        const renderHistoryList = () => {
+            const query = searchQueryInput.value.toLowerCase().trim();
+            const filterStartDate = historyStartDateInput.value ? new Date(historyStartDateInput.value) : null;
+            const filterEndDate = historyEndDateInput.value ? new Date(historyEndDateInput.value) : null;
+            const sortBy = historySortBySelect.value;
+            itemsPerPage = parseInt(itemsPerPageSelect.value);
+
+            selectedInvoiceIds = new Set([...selectedInvoiceIds].filter(id => historyInvoices.map(inv => inv.id).includes(id)));
+
+            let filteredInvoices = historyInvoices.filter((invoice) => {
+                const customerName = (invoice.customerName || '').toLowerCase();
+                const invoiceNumber = (invoice.invoiceNumber || '').toLowerCase();
+                const customerPhone = (invoice.customerPhone || '').toLowerCase();
+                const customerAddress = (invoice.customerAddress || '').toLowerCase();
+                
+                let matchesDate = true;
+                const invoiceDate = invoice.timestamp.toDate();
+                if (filterStartDate) {
+                    const startOfDay = new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0);
+                    if (invoiceDate < startOfDay) matchesDate = false;
+                }
+                if (filterEndDate) {
+                    const endOfDay = new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59);
+                    if (invoiceDate > endOfDay) matchesDate = false;
+                }
+                const matchesSearch = invoiceNumber.includes(query) || customerName.includes(query) || customerPhone.includes(query) || customerAddress.includes(query);
+                return matchesDate && (query.length === 0 || matchesSearch);
+            });
+            
+            filteredInvoices.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
+
+            const totalItems = filteredInvoices.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedInvoices = filteredInvoices.slice(startIndex, startIndex + itemsPerPage);
+
+            historyListContainer.innerHTML = '';
+            if (paginatedInvoices.length === 0) {
+                 historyListContainer.innerHTML = `<p class="text-center text-gray-500">គ្មានទិន្នន័យ។</p>`;
+                 return;
+            }
+
+            paginatedInvoices.forEach((invoice) => {
+                const invoiceDate = invoice.timestamp.toDate().toLocaleDateString('km-KH');
+                const invoiceTime = invoice.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const totalAmount = invoice.items.reduce((sum, item) => sum + item.total, 0) + (invoice.deliveryFee || 0);
+                const isSelected = selectedInvoiceIds.has(invoice.id); 
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'bg-white rounded-lg shadow-sm border border-gray-200 mb-4 overflow-hidden relative group hover:shadow-md transition-all duration-300';
+                
+                let itemsListHtml = '';
+                invoice.items.forEach(item => {
+                    itemsListHtml += `
+                    <div class="flex justify-between items-center text-sm py-2 border-b border-gray-200 last:border-b-0 px-4">
+                        <span class="font-medium text-gray-700">${item.name}</span>
+                        <div class="text-right">
+                            <span class="text-gray-500 text-xs">${item.quantity} x $${item.price.toFixed(2)}</span>
+                            <span class="ml-4 font-bold text-gray-800">$${item.total.toFixed(2)}</span>
+                        </div>
+                    </div>`;
+                });
+
+                cardDiv.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-start space-x-3">
+                                <div class="mt-1">
+                                    <input type="checkbox" data-invoice-id="${invoice.id}" ${isSelected ? 'checked' : ''} class="invoice-select-checkbox h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-lg font-bold text-gray-800">លេខវិក្កយបត្រ: ${invoice.invoiceNumber || 'N/A'}</h3>
+                                    </div>
+                                    <p class="text-green-600 font-bold text-lg mt-1">សរុប: $${totalAmount.toFixed(2)} <span class="text-xs text-gray-400 font-normal ml-2">✓</span></p>
+                                    
+                                    <div class="mt-2 space-y-1 text-sm text-gray-600">
+                                        <p><span class="font-semibold w-24 inline-block">អតិថិជន:</span> ${invoice.customerName}</p>
+                                        <p><span class="font-semibold w-24 inline-block">ទូរស័ព្ទ:</span> ${invoice.customerPhone}</p>
+                                        <p><span class="font-semibold w-24 inline-block">អាសយដ្ឋាន:</span> ${invoice.customerAddress}</p>
+                                        <p class="text-xs text-gray-400 mt-2">${invoiceDate} (${invoiceTime})</p>
+                                        ${invoice.storeName ? `<p class="text-xs text-gray-500">ហាង: ${invoice.storeName}</p>` : ''}
+                                        ${invoice.sellerName ? `<p class="text-xs text-blue-600 font-medium">អ្នកលក់: ${invoice.sellerName}</p>` : ''}
+                                        ${invoice.paymentNotes ? `<p class="text-xs text-gray-500">កំណត់សម្គាល់/TxD: ${invoice.paymentNotes}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button class="edit-invoice p-2 text-gray-400 hover:text-orange-500 transition-colors" data-doc-id="${invoice.id}" title="កែប្រែ">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.136 9.142l-.788.788-5.61 5.61a1 1 0 01-1.414 0l-1.414-1.414a1 1 0 010-1.414l5.61-5.61.788-.788 4.243 4.243z"/>
+                                    </svg>
+                                </button>
+                                <button class="reprint-invoice p-2 text-gray-400 hover:text-blue-600 transition-colors" data-doc-id="${invoice.id}" title="បោះពុម្ព">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm2 5V4h6v5H7zm6 3H7v4h6v-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <button class="delete-item-db p-2 text-gray-400 hover:text-red-600 transition-colors" data-doc-id="${invoice.id}" title="លុប">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 border-t border-gray-200">
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">បញ្ជីទំនិញ</div>
+                        ${itemsListHtml}
+                    </div>
+                `;
+                historyListContainer.appendChild(cardDiv);
+            });
+            
+            document.querySelectorAll('.delete-item-db').forEach(btn => btn.addEventListener('click', deleteItemFromDB));
+            document.querySelectorAll('.reprint-invoice').forEach(btn => btn.addEventListener('click', reprintInvoice));
+            document.querySelectorAll('.edit-invoice').forEach(btn => btn.addEventListener('click', openEditModal));
+            document.querySelectorAll('.invoice-select-checkbox').forEach(cb => {
+                 cb.addEventListener('change', (e) => {
+                     const id = e.target.dataset.invoiceId;
+                     e.target.checked ? selectedInvoiceIds.add(id) : selectedInvoiceIds.delete(id);
+                     updateSelectionDisplay();
+                 });
+            });
+            
+            updateSelectionDisplay();
+        };
+
+        const updateDashboard = () => {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const todayInvoices = historyInvoices.filter(inv => {
+                const d = inv.timestamp.toDate();
+                return d >= startOfToday;
+            });
+            
+            const todayCount = todayInvoices.length;
+            const todayRev = todayInvoices.reduce((sum, inv) => sum + (inv.items.reduce((s, i) => s + i.total, 0) + (inv.deliveryFee || 0)), 0);
+            
+            document.getElementById('todaySalesCount').textContent = todayCount;
+            document.getElementById('todayRevenue').textContent = '$' + todayRev.toFixed(2);
+
+            const startStr = startDateInput.value;
+            const endStr = endDateInput.value;
+            const delFilter = dashboardDeliveryFilter.value;
+            const payFilter = dashboardPaymentStatusFilter.value;
+
+            let periodInvoices = historyInvoices.filter(inv => {
+                const d = inv.timestamp.toDate();
+                let match = true;
+                if(startStr) match = match && d >= new Date(startStr);
+                if(endStr) {
+                    const e = new Date(endStr);
+                    e.setHours(23,59,59);
+                    match = match && d <= e;
+                }
+                if(delFilter !== 'All') match = match && (inv.deliveryOption === delFilter);
+                
+                const isPaid = !['មិនទាន់វេទឹកប្រាក់', 'Unpaid'].includes(inv.paymentOption);
+                if(payFilter === 'Paid' && !isPaid) match = false;
+                if(payFilter === 'Unpaid' && isPaid) match = false;
+
+                return match;
+            });
+
+            const periodCount = periodInvoices.length;
+            const periodRev = periodInvoices.reduce((sum, inv) => sum + (inv.items.reduce((s, i) => s + i.total, 0) + (inv.deliveryFee || 0)), 0);
+            const periodDelFee = periodInvoices.reduce((sum, inv) => sum + (inv.deliveryFee || 0), 0);
+
+            totalSalesCountDisplay.textContent = periodCount;
+            totalRevenueDisplay.textContent = '$' + periodRev.toFixed(2);
+            totalDeliveryFeeDisplay.textContent = '$' + periodDelFee.toFixed(2);
+
+            renderSellerPerformance(periodInvoices);
+        };
+
+        const renderSellerPerformance = (invoices) => {
+            const selectedSeller = dashboardSellerFilter.value;
+            const tbody = document.getElementById('sellerPerformanceList');
+            tbody.innerHTML = '';
+
+            const sellerStats = {};
+            invoices.forEach(inv => {
+                const name = inv.sellerName || 'មិនមានឈ្មោះ (No Name)';
+                if (!sellerStats[name]) sellerStats[name] = { count: 0, revenue: 0, totalQty: 0 };
+                
+                const total = inv.items.reduce((s, i) => s + i.total, 0) + (inv.deliveryFee || 0);
+                const qty = inv.items.reduce((s, i) => s + (parseFloat(i.quantity) || 0), 0);
+                
+                sellerStats[name].count++;
+                sellerStats[name].revenue += total;
+                sellerStats[name].totalQty += qty;
+            });
+
+            let sellerNames = Object.keys(sellerStats);
+            if (selectedSeller !== 'All') {
+                sellerNames = sellerNames.filter(name => name === selectedSeller);
+            }
+            
+            sellerNames.sort((a, b) => sellerStats[b].revenue - sellerStats[a].revenue);
+
+            if (sellerNames.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">គ្មានទិន្នន័យ</td></tr>';
+                return;
+            }
+
+            sellerNames.forEach(name => {
+                const stat = sellerStats[name];
+                const commission = stat.totalQty * 200; // 200 Riel per Item
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${stat.count}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${stat.totalQty}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">${commission.toLocaleString()} ៛</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${stat.revenue.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        const generateInvoiceHTML = (invoiceData, invoiceNumber) => {
+            const now = invoiceData.timestamp ? invoiceData.timestamp : new Date();
+            const dateObj = (typeof now.toDate === 'function') ? now.toDate() : now;
+            
+            const day = dateObj.getDate();
+            const month = dateObj.getMonth() + 1;
+            const year = dateObj.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+
+            const customerName = invoiceData.customerName || "";
+            const customerPhone = invoiceData.customerPhone || "";
+            const customerAddress = invoiceData.customerAddress || "";
+            const deliveryOption = invoiceData.deliveryOption || "";
+            const paymentOption = invoiceData.paymentOption || ""; 
+            const paymentNotes = invoiceData.paymentNotes || "";
+            const storeName = invoiceData.storeName;
+            const sellerName = invoiceData.sellerName || "";
+            const generalNote = invoiceData.generalNote || "";
+            
+            const salesTotal = invoiceData.items.reduce((sum, item) => sum + item.total, 0);
+            const deliveryFee = invoiceData.deliveryFee || 0;
+            const finalTotal = salesTotal + deliveryFee;
+
+            // Load settings
+            const s = receiptSettings;
+
+            let html = `
+                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${s.lineHeight || 1.2}; color: #000; text-align: left; background-color: #fff;">
+                    <h1 style="font-size: ${s.titleSize}px; font-weight: ${s.titleBold ? 'bold' : 'normal'}; text-align: center; margin-bottom: 5px;">${storeName}</h1>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
+                        <div style="flex: 1; text-align: left;">${formattedDate}</div>
+                        <div style="flex: 1; text-align: center; white-space: nowrap;">By: ${sellerName}</div>
+                        <div style="flex: 1; text-align: right;">${invoiceNumber}</div>
+                    </div>
+
+                    <div style="margin-bottom: 5px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'};">
+                        <p style="margin: 0;">អតិថិជន: <strong>${customerName}</strong></p>
+                        <p style="margin: 0;">ទូរស័ព្ទ: <strong>${customerPhone}</strong></p>
+                        <p style="margin: 0;">អាសយដ្ឋាន: <strong>${customerAddress}</strong></p>
+                        <p style="margin: 0;">ដឹកតាម: <strong>${deliveryOption}</strong> | ទូទាត់: <strong>${paymentOption}</strong></p>
+                        <p style="margin: 0;">Note: ${paymentNotes}</p>
+                    </div>
+                    <hr style="border-top: 1px dashed #000; margin-bottom: 5px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: ${s.rowSize}px; font-weight: ${s.rowBold ? 'bold' : 'normal'};">
+                        <thead>
+                            <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
+                                <th style="text-align: left; padding-bottom: 2px;">ឈ្មោះទំនិញ</th>
+                                <th style="text-align: right; padding-bottom: 2px;">ចំនួន</th>
+                                <th style="text-align: right; padding-bottom: 2px;">សរុប</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            invoiceData.items.forEach((item, index) => {
+                html += `<tr>
+                    <td style="padding: 2px 0; vertical-align: top;">
+                        <div style="display: flex; align-items: flex-start;">
+                            <span style="min-width: 20px; display: inline-block;">${index + 1}.</span>
+                            <span style="flex: 1; word-break: break-word;">${item.name}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: right; padding: 2px 0; vertical-align: top;">${item.quantity}</td>
+                    <td style="text-align: right; padding: 2px 0; vertical-align: top;">$${item.total.toFixed(2)}</td>
+                </tr>`;
+            });
+            html += `
+                        </tbody>
+                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'};">
+                            <tr><td colspan="2" style="text-align: right; padding-top: 5px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 5px;">$${salesTotal.toFixed(2)}</td></tr>
+                            <tr><td colspan="2" style="text-align: right;">តម្លៃសេវាដឹក:</td><td style="text-align: right;">$${deliveryFee.toFixed(2)}</td></tr>
+                            <tr><td colspan="2" style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
+                        </tfoot>
+                    </table>
+                    
+                    ${generalNote ? `<div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'};">${generalNote}</div>` : ''}
+                </div>
+            `;
+            return html;
+        };
+
+        const toggleView = (viewToShow) => {
+            dashboardView.style.display = 'none'; customerInfoView.style.display = 'none';
+            addItemView.style.display = 'none'; storeOptionsView.style.display = 'none';
+            sellerOptionsView.style.display = 'none'; updatePaymentView.style.display = 'none';
+            receiptSettingsView.style.display = 'none'; 
+            historyView.style.display = 'none';
+            
+            [dashboardNavBtn, customerInfoNavBtn, addItemNavBtn, storeOptionsNavBtn, sellerOptionsNavBtn, updatePaymentNavBtn, receiptSettingsNavBtn, historyNavBtn].forEach(btn => btn.classList.replace('bg-indigo-900', 'text-indigo-100'));
+            
+            if (viewToShow === 'dashboard') { dashboardView.style.display = 'block'; }
+            else if (viewToShow === 'customerInfo') { 
+                customerInfoView.style.display = 'block'; 
+                populateMainStoreSelect();
+                renderSellerCheckboxes();
+            }
+            else if (viewToShow === 'addItem') { addItemView.style.display = 'block'; }
+            else if (viewToShow === 'storeOptions') { storeOptionsView.style.display = 'block'; renderStoresManagementList(); }
+            else if (viewToShow === 'sellerOptions') { sellerOptionsView.style.display = 'block'; renderSellersManagementList(); }
+            else if (viewToShow === 'updatePayment') { updatePaymentView.style.display = 'block'; }
+            else if (viewToShow === 'receiptSettings') { 
+                receiptSettingsView.style.display = 'block'; 
+                // Populate current settings into inputs
+                rsTitleSize.value = receiptSettings.titleSize;
+                rsTitleBold.checked = receiptSettings.titleBold;
+                rsDateSize.value = receiptSettings.dateSize;
+                rsDateBold.checked = receiptSettings.dateBold;
+                rsInfoSize.value = receiptSettings.infoSize;
+                rsInfoBold.checked = receiptSettings.infoBold;
+                rsHeaderSize.value = receiptSettings.headerSize;
+                rsHeaderBold.checked = receiptSettings.headerBold;
+                rsRowSize.value = receiptSettings.rowSize;
+                rsRowBold.checked = receiptSettings.rowBold;
+                rsTotalSize.value = receiptSettings.totalSize;
+                rsTotalBold.checked = receiptSettings.totalBold;
+                rsNoteSize.value = receiptSettings.noteSize;
+                rsNoteBold.checked = receiptSettings.noteBold;
+                rsLineHeight.value = receiptSettings.lineHeight || 1.2;
+                rsMarginLeft.value = receiptSettings.marginLeft !== undefined ? receiptSettings.marginLeft : -6;
+                rsMarginRight.value = receiptSettings.marginRight !== undefined ? receiptSettings.marginRight : 4;
+                
+                renderReceiptDemo();
+            }
+            else if (viewToShow === 'history') { historyView.style.display = 'block'; renderHistoryList(); }
+        };
+
+        const getTodayDateString = () => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        // NEW: Render Receipt Demo using Live Settings
+        const renderReceiptDemo = () => {
+            const s = {
+                titleSize: parseInt(rsTitleSize.value) || 16, titleBold: rsTitleBold.checked,
+                dateSize: parseInt(rsDateSize.value) || 14, dateBold: rsDateBold.checked,
+                infoSize: parseInt(rsInfoSize.value) || 14, infoBold: rsInfoBold.checked,
+                headerSize: parseInt(rsHeaderSize.value) || 14, headerBold: rsHeaderBold.checked,
+                rowSize: parseInt(rsRowSize.value) || 14, rowBold: rsRowBold.checked,
+                totalSize: parseInt(rsTotalSize.value) || 14, totalBold: rsTotalBold.checked,
+                noteSize: parseInt(rsNoteSize.value) || 14, noteBold: rsNoteBold.checked,
+                lineHeight: parseFloat(rsLineHeight.value) || 1.2
+            };
+
+            const day = new Date().getDate();
+            const month = new Date().getMonth() + 1;
+            const year = new Date().getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+
+            let html = `
+                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${s.lineHeight}; color: #000; text-align: left; background-color: #fff;">
+                    <h1 style="font-size: ${s.titleSize}px; font-weight: ${s.titleBold ? 'bold' : 'normal'}; text-align: center; margin-bottom: 5px;">ឈ្មោះហាងសាកល្បង</h1>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
+                        <div style="flex: 1; text-align: left;">${formattedDate}</div>
+                        <div style="flex: 1; text-align: center; white-space: nowrap;">By: អ្នកលក់</div>
+                        <div style="flex: 1; text-align: right;">C0000000</div>
+                    </div>
+
+                    <div style="margin-bottom: 5px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'};">
+                        <p style="margin: 0;">អតិថិជន: <strong>ឈ្មោះអតិថិជន</strong></p>
+                        <p style="margin: 0;">ទូរស័ព្ទ: <strong>012 345 678</strong></p>
+                        <p style="margin: 0;">អាសយដ្ឋាន: <strong>ភ្នំពេញ</strong></p>
+                        <p style="margin: 0;">ដឹកតាម: <strong>VET</strong> | ទូទាត់: <strong>ABA</strong></p>
+                        <p style="margin: 0;">Note: TxD 123456</p>
+                    </div>
+                    <hr style="border-top: 1px dashed #000; margin-bottom: 5px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: ${s.rowSize}px; font-weight: ${s.rowBold ? 'bold' : 'normal'};">
+                        <thead>
+                            <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
+                                <th style="text-align: left; padding-bottom: 2px;">ឈ្មោះទំនិញ</th>
+                                <th style="text-align: right; padding-bottom: 2px;">ចំនួន</th>
+                                <th style="text-align: right; padding-bottom: 2px;">សរុប</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 2px 0; vertical-align: top;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="min-width: 20px; display: inline-block;">1.</span>
+                                        <span style="flex: 1; word-break: break-word;">ឡេការពារកម្តៅថ្ងៃ (ប្រភេទលាបមុខការពារបានយូរ)</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">1</td>
+                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">$15.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; vertical-align: top;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="min-width: 20px; display: inline-block;">2.</span>
+                                        <span style="flex: 1; word-break: break-word;">សេរ៉ូមបំប៉នស្បែកមុខ</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">2</td>
+                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">$20.00</td>
+                            </tr>
+                        </tbody>
+                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'};">
+                            <tr><td colspan="2" style="text-align: right; padding-top: 5px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 5px;">$35.00</td></tr>
+                            <tr><td colspan="2" style="text-align: right;">តម្លៃសេវាដឹក:</td><td style="text-align: right;">$1.50</td></tr>
+                            <tr><td colspan="2" style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'};">សូមអរគុណសម្រាប់ការគាំទ្រ!</div>
+                </div>
+            `;
+            document.getElementById('receiptDemoContainer').innerHTML = html;
+        };
+
+        // Attach listeners to all setting inputs to update demo instantly
+        [rsTitleSize, rsTitleBold, rsDateSize, rsDateBold, rsInfoSize, rsInfoBold, rsHeaderSize, rsHeaderBold, rsRowSize, rsRowBold, rsTotalSize, rsTotalBold, rsNoteSize, rsNoteBold, rsLineHeight, rsMarginLeft, rsMarginRight].forEach(el => {
+            if(el) {
+                el.addEventListener('input', renderReceiptDemo);
+                el.addEventListener('change', renderReceiptDemo);
+            }
+        });
+
+        // --- NEW: Update Payment View Logic ---
+        btnSearchUpdateInvoice.addEventListener('click', () => {
+            const query = searchUpdateInvoiceInput.value.trim().toLowerCase();
+            if(!query) return showMessage('សូមបញ្ចូលលេខវិក្កយបត្រដើម្បីស្វែងរក!');
+            
+            const inv = historyInvoices.find(i => (i.invoiceNumber || '').toLowerCase() === query);
+            
+            if(inv) {
+                updatePaymentDocId.value = inv.id;
+                const total = inv.items.reduce((s, item) => s + item.total, 0) + (inv.deliveryFee || 0);
+                
+                updatePaymentInvoiceDetails.innerHTML = `
+                    <p class="mb-1"><strong>លេខវិក្កយបត្រ:</strong> <span class="text-indigo-600 font-bold">${inv.invoiceNumber}</span></p>
+                    <p class="mb-1"><strong>អតិថិជន:</strong> ${inv.customerName} (${inv.customerPhone})</p>
+                    <p class="mb-1"><strong>អាសយដ្ឋាន:</strong> ${inv.customerAddress}</p>
+                    <p class="mb-1"><strong>សរុបទឹកប្រាក់:</strong> <span class="text-green-600 font-bold">$${total.toFixed(2)}</span></p>
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <p><strong>ជម្រើសបច្ចុប្បន្ន:</strong> ${inv.paymentOption} ${inv.paymentNotes ? `<span class="text-gray-500">(TxD: ${inv.paymentNotes})</span>` : ''}</p>
+                    </div>
+                `;
+                
+                const predefinedOptions = ['AC', 'ABA', 'Wing', 'តាមអ្នកដឹក', 'មិនទាន់វេទឹកប្រាក់'];
+                if(predefinedOptions.includes(inv.paymentOption || 'មិនទាន់វេទឹកប្រាក់')) {
+                    updatePaymentMethodSelect.value = inv.paymentOption || 'មិនទាន់វេទឹកប្រាក់';
+                    updatePaymentOtherContainer.classList.add('hidden');
+                } else {
+                    updatePaymentMethodSelect.value = 'ធនាគារផ្សេង';
+                    updatePaymentOtherInput.value = inv.paymentOption;
+                    updatePaymentOtherContainer.classList.remove('hidden');
+                }
+                updatePaymentTxdInput.value = inv.paymentNotes || '';
+                
+                updatePaymentFormContainer.classList.remove('hidden');
+            } else {
+                showMessage('មិនមានទិន្នន័យសម្រាប់វិក្កយបត្រលេខនេះទេ។ សូមពិនិត្យមើលម្តងទៀត!');
+                updatePaymentFormContainer.classList.add('hidden');
+            }
+        });
+
+        updatePaymentMethodSelect.addEventListener('change', () => {
+             const isOther = updatePaymentMethodSelect.value === 'ធនាគារផ្សេង';
+             isOther ? updatePaymentOtherContainer.classList.remove('hidden') : updatePaymentOtherContainer.classList.add('hidden');
+        });
+
+        btnCancelUpdatePayment.addEventListener('click', () => {
+            updatePaymentFormContainer.classList.add('hidden');
+            searchUpdateInvoiceInput.value = '';
+        });
+
+        btnSaveUpdatedPayment.addEventListener('click', async () => {
+            const docId = updatePaymentDocId.value;
+            const txd = updatePaymentTxdInput.value.trim();
+            let pMethod = updatePaymentMethodSelect.value;
+            if(pMethod === 'ធនាគារផ្សេង') {
+                pMethod = updatePaymentOtherInput.value.trim() || 'ធនាគារផ្សេង';
+            }
+
+            if (txd.length > 5) {
+                const conflict = historyInvoices.find(i => i.id !== docId && (i.paymentNotes||'').trim().toLowerCase() === txd.toLowerCase());
+                if (conflict) {
+                    showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflict) + `
+                        <div class="flex justify-center mt-4">
+                            <button onclick="document.getElementById('messageModal').style.display='none'" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">បោះបង់</button>
+                            <button id="confirmUpdatePaymentDirectBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">បន្តរក្សាទុក</button>
+                        </div>
+                    `);
+                    document.getElementById('confirmUpdatePaymentDirectBtn').onclick = async () => {
+                        document.getElementById('messageModal').style.display = 'none';
+                        await commitPaymentUpdate(docId, pMethod, txd);
+                    };
+                    return;
+                }
+            }
+
+            await commitPaymentUpdate(docId, pMethod, txd);
+        });
+
+        btnSaveAndPreviewUpdatedPayment.addEventListener('click', async () => {
+            const docId = updatePaymentDocId.value;
+            const txd = updatePaymentTxdInput.value.trim();
+            let pMethod = updatePaymentMethodSelect.value;
+            if(pMethod === 'ធនាគារផ្សេង') {
+                pMethod = updatePaymentOtherInput.value.trim() || 'ធនាគារផ្សេង';
+            }
+
+            if (txd.length > 5) {
+                const conflict = historyInvoices.find(i => i.id !== docId && (i.paymentNotes||'').trim().toLowerCase() === txd.toLowerCase());
+                if (conflict) {
+                    showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflict) + `
+                        <div class="flex justify-center mt-4">
+                            <button onclick="document.getElementById('messageModal').style.display='none'" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">បោះបង់</button>
+                            <button id="confirmUpdatePaymentPreviewDirectBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">បន្តរក្សាទុក</button>
+                        </div>
+                    `);
+                    document.getElementById('confirmUpdatePaymentPreviewDirectBtn').onclick = async () => {
+                        document.getElementById('messageModal').style.display = 'none';
+                        await commitPaymentUpdateAndPreview(docId, pMethod, txd);
+                    };
+                    return;
+                }
+            }
+            await commitPaymentUpdateAndPreview(docId, pMethod, txd);
+        });
+
+        async function commitPaymentUpdateAndPreview(docId, method, txd) {
+            try {
+                const inv = historyInvoices.find(i => i.id === docId);
+                if (!inv) return;
+
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId), {
+                    paymentOption: method,
+                    paymentNotes: txd,
+                    updatedAt: new Date()
+                });
+                
+                const updatedInvoiceData = {
+                    ...inv,
+                    paymentOption: method,
+                    paymentNotes: txd
+                };
+                
+                const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber);
+                await showImagePreview(generatedHtml);
+
+                updatePaymentFormContainer.classList.add('hidden');
+                searchUpdateInvoiceInput.value = '';
+            } catch (e) {
+                console.error(e);
+                showMessage('មានបញ្ហាក្នុងការរក្សាទុក។');
+            }
+        }
+
+        async function commitPaymentUpdate(docId, method, txd) {
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId), {
+                    paymentOption: method,
+                    paymentNotes: txd,
+                    updatedAt: new Date()
+                });
+                showMessage('បានកែប្រែការទូទាត់ដោយជោគជ័យ។');
+                updatePaymentFormContainer.classList.add('hidden');
+                searchUpdateInvoiceInput.value = '';
+            } catch (e) {
+                console.error(e);
+                showMessage('មានបញ្ហាក្នុងការរក្សាទុក។');
+            }
+        }
+
+        // Image Generation Logic
+        let currentPreviewBlob = null;
+
+        const renderInvoiceToImage = async (invoiceHTML) => {
+            const container = document.getElementById('offscreenInvoiceContainer');
+            container.innerHTML = invoiceHTML;
+            container.style.display = 'block';
+
+            await new Promise(r => setTimeout(r, 200)); 
+
+            const canvas = await html2canvas(container, {
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                windowWidth: container.scrollWidth,
+                windowHeight: container.scrollHeight
+            });
+
+            container.style.display = 'none';
+
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    resolve({
+                        blob: blob,
+                        dataUrl: canvas.toDataURL('image/png')
+                    });
+                }, 'image/png');
+            });
+        };
+
+        const showImagePreview = async (invoiceHTML) => {
+            invoicePreviewContent.innerHTML = '<div class="p-4 text-center text-gray-500">កំពុងបង្កើតរូបភាព...</div>';
+            previewModal.style.display = 'flex';
+            
+            try {
+                const { blob, dataUrl } = await renderInvoiceToImage(invoiceHTML);
+                currentPreviewBlob = blob;
+                invoicePreviewContent.innerHTML = `<img src="${dataUrl}" style="width: 100%; max-width: 400px; border: 1px solid #ccc; display: block; margin: 0 auto; user-select: auto; -webkit-user-drag: auto;" alt="Invoice">`;
+            } catch (err) {
+                invoicePreviewContent.innerHTML = '<div class="p-4 text-center text-red-500">បរាជ័យក្នុងការបង្កើតរូបភាព។</div>';
+            }
+            
+            previewPrintBtn.onclick = () => {
+                const printWindow = window.open('', '_blank', 'height=600,width=800');
+                const s = receiptSettings;
+                const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
+                const mr = s.marginRight !== undefined ? s.marginRight : 4;
+                printWindow.document.write(`<html><head><title>វិក្កយបត្រ</title><style>@page { size: 80mm auto; margin: 0; } body{font-family: "Khmer OS Battambang", Arial, sans-serif; line-height: ${s.lineHeight || 1.2}; color: #000; margin: 0; padding: 0; margin-left: ${ml}mm; margin-right: ${mr}mm;} table{width: 100%; border-collapse: collapse;} th, td{padding: 2px 0; text-align: left;}</style></head><body>`);
+                printWindow.document.write(invoiceHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            };
+        };
+
+        if(previewCopyBtn) {
+            previewCopyBtn.addEventListener('click', async () => {
+                if (!currentPreviewBlob) return;
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({
+                            'image/png': currentPreviewBlob
+                        })
+                    ]);
+                    showMessage('បានចម្លងរូបភាពរួចរាល់! លោកអ្នកអាច Paste (Ctrl+V) ទៅក្នុង Messenger បាន។');
+                } catch (err) {
+                    console.error(err);
+                    showMessage('មិនអាចចម្លងស្វ័យប្រវត្តិបានទេ។ សូមចុចស្តាំ (Right Click) ឬសង្កត់យូរលើរូបភាព រួចជ្រើសរើស "Copy Image" ជំនួសវិញ។');
+                }
+            });
+        }
+
+        const saveInvoiceTransaction = async (invoiceDetails, shouldPrint) => {
+            const { customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote } = invoiceDetails;
+            try {
+                const newInvoiceNumber = 'C' + (historyInvoices.length + 1).toString().padStart(7, '0');
+                const invoiceData = {
+                    customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote,
+                    items: currentInvoiceItems, timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: shouldPrint ? new Date() : null,
+                };
+                await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
+                if (shouldPrint) {
+                    printInvoice(invoiceData, newInvoiceNumber);
+                    showMessage('វិក្កយបត្រត្រូវបានបោះពុម្ព។');
+                } else {
+                    showMessage('ទិន្នន័យត្រូវបានរក្សាទុក។');
+                }
+                currentInvoiceItems = [];
+                renderSalesList();
+                clearFormInputs();
+            } catch (e) { console.error(e); showMessage('មានបញ្ហាក្នុងការរក្សាទុកវិក្កយបត្រ។'); }
+        };
+
+        const handleSaveAction = async (shouldPrint) => {
+            if (currentInvoiceItems.length === 0) { showMessage('សូមបន្ថែមទំនិញយ៉ាងតិចមួយមុខ។'); return; }
+            const customerName = customerNameInput.value.trim();
+            const customerAddress = customerAddressInput.value.trim();
+            const storeName = getStoreName();
+            const sellerName = getSellerName();
+            const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
+            const paymentNotes = paymentNotesInput.value.trim();
+            
+            if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
+                showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
+            }
+
+            if (paymentNotes.length > 5) {
+                 const conflictingInvoice = historyInvoices.find(invoice => 
+                     (invoice.paymentNotes || '').trim().toLowerCase() === paymentNotes.toLowerCase()
+                 );
+
+                 if (conflictingInvoice) {
+                     showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflictingInvoice) + `
+                            <div class="flex justify-center mt-4">
+                                <button onclick="document.getElementById('messageModal').style.display='none'" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">បោះបង់</button>
+                                <button id="confirmSaveBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">បន្តរក្សាទុក</button>
+                            </div>
+                     `);
+                     
+                     document.getElementById('confirmSaveBtn').onclick = () => {
+                         document.getElementById('messageModal').style.display = 'none';
+                         saveInvoiceTransaction({
+                           customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
+                           paymentOption: getPaymentOptions(), paymentNotes, 
+                           deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
+                        }, shouldPrint);
+                     };
+                     return; 
+                 }
+            }
+
+            saveInvoiceTransaction({
+               customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
+               paymentOption: getPaymentOptions(), paymentNotes, 
+               deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
+            }, shouldPrint);
+        };
+
+        const handleSaveAndPreview = async () => {
+            if (currentInvoiceItems.length === 0) { showMessage('សូមបន្ថែមទំនិញយ៉ាងតិចមួយមុខ។'); return; }
+            const customerName = customerNameInput.value.trim();
+            const customerAddress = customerAddressInput.value.trim();
+            const storeName = getStoreName();
+            const sellerName = getSellerName();
+            const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
+            const paymentNotes = paymentNotesInput.value.trim();
+            
+            if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
+                showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
+            }
+
+            const executeSaveAndPreview = async () => {
+                try {
+                    const newInvoiceNumber = 'C' + (historyInvoices.length + 1).toString().padStart(7, '0');
+                    const invoiceData = {
+                        customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
+                        paymentOption: getPaymentOptions(), paymentNotes: paymentNotesInput.value.trim(), 
+                        deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote,
+                        items: [...currentInvoiceItems], timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: null,
+                    };
+                    
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
+                    
+                    const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber);
+                    await showImagePreview(generatedHtml);
+
+                    currentInvoiceItems = [];
+                    renderSalesList();
+                    clearFormInputs();
+
+                } catch (e) { console.error(e); showMessage('មានបញ្ហាក្នុងការរក្សាទុកវិក្កយបត្រ។'); }
+            };
+
+             if (paymentNotes.length > 5) {
+                 const conflictingInvoice = historyInvoices.find(invoice => 
+                     (invoice.paymentNotes || '').trim().toLowerCase() === paymentNotes.toLowerCase()
+                 );
+
+                 if (conflictingInvoice) {
+                      showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflictingInvoice) + `
+                            <div class="flex justify-center mt-4">
+                                <button onclick="document.getElementById('messageModal').style.display='none'" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">បោះបង់</button>
+                                <button id="confirmPreviewBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">បន្តរក្សាទុក</button>
+                            </div>
+                     `);
+                      document.getElementById('confirmPreviewBtn').onclick = () => {
+                         document.getElementById('messageModal').style.display = 'none';
+                         executeSaveAndPreview();
+                     };
+                     return;
+                 }
+            }
+
+            executeSaveAndPreview();
+        };
+
+        const reprintInvoice = async (event) => {
+            const docId = event.currentTarget.dataset.docId;
+            const invoice = historyInvoices.find(inv => inv.id === docId);
+            if (invoice) printInvoice(invoice, invoice.invoiceNumber);
+        };
+
+        const printInvoice = (invoiceData, invoiceNumber) => {
+            const invoiceHTML = generateInvoiceHTML(invoiceData, invoiceNumber);
+            const printWindow = window.open('', '_blank', 'height=600,width=800');
+            const s = receiptSettings;
+            const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
+            const mr = s.marginRight !== undefined ? s.marginRight : 4;
+            printWindow.document.write(`<html><head><title>វិក្កយបត្រ</title><style>@page { size: 80mm auto; margin: 0; } body{font-family: "Khmer OS Battambang", Arial, sans-serif; line-height: ${s.lineHeight || 1.2}; color: #000; margin: 0; padding: 0; margin-left: ${ml}mm; margin-right: ${mr}mm;} table{width: 100%; border-collapse: collapse;} th, td{padding: 2px 0; text-align: left;}</style></head><body>`);
+            printWindow.document.write(invoiceHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        };
+
+        const downloadDataAsCsv = async () => {
+            try {
+                const filterStartDate = historyStartDateInput.value ? new Date(historyStartDateInput.value) : null;
+                const filterEndDate = historyEndDateInput.value ? new Date(historyEndDateInput.value) : null;
+
+                const filteredInvoices = historyInvoices.filter(invoice => {
+                    let matchesDate = true;
+                    const invoiceDate = invoice.timestamp.toDate();
+                    if (filterStartDate) {
+                        const startOfDay = new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0);
+                        if (invoiceDate < startOfDay) {
+                            matchesDate = false;
+                        }
+                    }
+                    if (filterEndDate) {
+                        const endOfDay = new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59);
+                        if (invoiceDate > endOfDay) {
+                            matchesDate = false;
+                        }
+                    }
+                    return matchesDate;
+                });
+                
+                if (filteredInvoices.length === 0) {
+                    showMessage('គ្មានទិន្នន័យដើម្បីទាញយកទេ។');
+                    return;
+                }
+
+                const headers = ["លេខវិក្កយបត្រ", "ឈ្មោះអតិថិជន", "លេខទូរស័ព្ទ", "អាសយដ្ឋាន", "ឈ្មោះហាង", "អ្នកលក់", "ឈ្មោះទំនិញ", "ចំនួន", "តម្លៃ", "ផលបូក", "ជម្រើសដឹកជញ្ជូន", "ជម្រើសការទូទាត់", "កំណត់សម្គាល់", "សេវាដឹក", "កាលបរិច្ឆេទ"]; 
+                let csv = "\uFEFF" + headers.join(',') + '\n';
+                
+                const sortedInvoices = [...filteredInvoices].sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate());
+                
+                sortedInvoices.forEach((invoice) => {
+                    const invoiceNumber = invoice.invoiceNumber || 'N/A';
+                    invoice.items.forEach(item => {
+                        const sanitize = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
+
+                        const values = [
+                            sanitize(invoiceNumber),
+                            sanitize(invoice.customerName || ''),
+                            sanitize(cleanPhoneNumber(invoice.customerPhone) || ''), 
+                            sanitize(invoice.customerAddress || ''),
+                            sanitize(invoice.storeName || ''),
+                            sanitize(invoice.sellerName || ''),
+                            sanitize(item.name || ''),
+                            item.quantity,
+                            item.price,
+                            item.total,
+                            sanitize(invoice.deliveryOption || ''),
+                            sanitize(invoice.paymentOption || ''),
+                            sanitize(invoice.paymentNotes || ''),
+                            invoice.deliveryFee,
+                            sanitize(invoice.timestamp.toDate())
+                        ];
+                        csv += values.join(',') + '\n';
+                    });
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `ទិន្នន័យលក់_${new Date().toLocaleDateString('en-CA')}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showMessage('ការទាញយកបានចាប់ផ្តើមហើយ។');
+
+            } catch (e) {
+                console.error("Error downloading data: ", e);
+                showMessage('មានបញ្ហាក្នុងការទាញយកទិន្នន័យ។ សូមព្យាយាមម្ដងទៀត។');
+            }
+        };
+
+        async function loadPublicData() {
+            loadingView.style.display = 'flex'; mainApp.style.display = 'none';
+            try {
+                if (unsubscribeInvoices) unsubscribeInvoices();
+                if (unsubscribeProducts) unsubscribeProducts();
+                if (unsubscribeStores) unsubscribeStores();
+                if (unsubscribeSellers) unsubscribeSellers();
+
+                const invoicesRef = collection(db, `artifacts/${appId}/public/data/invoices`);
+                const productsRef = collection(db, `artifacts/${appId}/public/data/products`);
+                const storesRef = collection(db, `artifacts/${appId}/public/data/stores`);
+                const sellersRef = collection(db, `artifacts/${appId}/public/data/sellers`);
+
+                unsubscribeInvoices = onSnapshot(invoicesRef, (snap) => {
+                    historyInvoices = [];
+                    snap.forEach((doc) => historyInvoices.push({ id: doc.id, ...doc.data() }));
+                    populateProductDatalist(); renderHistoryList(); 
+                    
+                    if (!startDateInput.value) startDateInput.value = getTodayDateString();
+                    if (!endDateInput.value) endDateInput.value = getTodayDateString();
+                    
+                    updateDashboard(); 
+                });
+                unsubscribeProducts = onSnapshot(productsRef, (snap) => {
+                    products = []; snap.forEach((doc) => products.push({ id: doc.id, ...doc.data() }));
+                    renderProductsList();
+                    populateProductDatalist();
+                });
+                unsubscribeStores = onSnapshot(storesRef, (snap) => {
+                    stores = []; snap.forEach((doc) => stores.push({ id: doc.id, ...doc.data() }));
+                    populateMainStoreSelect();
+                    populateStoreSelect();
+                });
+                unsubscribeSellers = onSnapshot(sellersRef, (snap) => {
+                    sellers = []; snap.forEach((doc) => sellers.push({ id: doc.id, ...doc.data() }));
+                    renderSellerCheckboxes();
+                    renderSellersManagementList();
+                    populateDashboardSellerFilter();
+                });
+
+                loadingView.style.display = 'none'; mainApp.style.display = 'flex';
+            } catch (error) { console.error(error); loadingView.style.display = 'none'; mainApp.style.display = 'flex'; showMessage('Error loading data.'); }
+        }
+        
+        // --- Init ---
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        
+        signInAnonymously(auth).then((userCred) => {
+            userId = userCred.user.uid;
+            loadPublicData();
+        }).catch((error) => console.error("Auth failed", error));
+
+        // Listeners
+        if(modalOkBtn) modalOkBtn.addEventListener('click', () => messageModal.style.display = 'none');
+        if(confirmYesBtn) confirmYesBtn.addEventListener('click', () => { confirmModal.style.display = 'none'; if(confirmationCallback) confirmationCallback(true); });
+        if(confirmNoBtn) confirmNoBtn.addEventListener('click', () => { confirmModal.style.display = 'none'; if(confirmationCallback) confirmationCallback(false); });
+        if (editSaveBtn) editSaveBtn.addEventListener('click', saveEditedInvoice);
+        if (editCancelBtn) editCancelBtn.addEventListener('click', () => editModal.style.display = 'none');
+        if (previewCloseBtn) previewCloseBtn.addEventListener('click', () => previewModal.style.display = 'none');
+        
+        if (editPaymentOptionSelect) editPaymentOptionSelect.addEventListener('change', () => {
+             const isOther = editPaymentOptionSelect.value === 'ធនាគារផ្សេង';
+             isOther ? editOtherPaymentContainer.classList.remove('hidden') : editOtherPaymentContainer.classList.add('hidden');
+        });
+
+        if (paymentSelect) {
+            paymentSelect.addEventListener('change', () => {
+                 const isOther = paymentSelect.value === 'ធនាគារផ្សេង';
+                 isOther ? otherPaymentMethodContainer.classList.remove('hidden') : otherPaymentMethodContainer.classList.add('hidden');
+                 if(isOther && otherPaymentMethodInput) otherPaymentMethodInput.focus();
+            });
+        }
+        
+        customerPhoneInput.addEventListener('input', (e) => {
+            formatPhoneNumber(e.target);
+        });
+
+        paymentNotesInput.addEventListener('input', () => {
+             const txd = paymentNotesInput.value.trim();
+             if (txd.length > 5) {
+                 const conflictingInvoice = historyInvoices.find(invoice => 
+                     (invoice.paymentNotes || '').trim().toLowerCase() === txd.toLowerCase()
+                 );
+
+                 if (conflictingInvoice) {
+                     showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflictingInvoice));
+                 } else {
+                    if(messageModal.style.display === 'flex' && modalMessage.textContent === 'ប្រយ័ត្ន! លេខ TxD ស្ទួន') {
+                        messageModal.style.display = 'none';
+                    }
+                 }
+             }
+        });
+        
+        updatePaymentTxdInput.addEventListener('input', () => {
+             const txd = updatePaymentTxdInput.value.trim();
+             const docId = updatePaymentDocId.value;
+             if (txd.length > 5) {
+                 const conflictingInvoice = historyInvoices.find(invoice => 
+                     invoice.id !== docId && (invoice.paymentNotes || '').trim().toLowerCase() === txd.toLowerCase()
+                 );
+
+                 if (conflictingInvoice) {
+                     showRichMessage('ប្រយ័ត្ន! លេខ TxD ស្ទួន', generateConflictMessageHTML(conflictingInvoice));
+                 } else {
+                    if(messageModal.style.display === 'flex' && modalMessage.textContent === 'ប្រយ័ត្ន! លេខ TxD ស្ទួន') {
+                        messageModal.style.display = 'none';
+                    }
+                 }
+             }
+        });
+
+        if (addItemBtn) addItemBtn.addEventListener('click', addItem);
+        if (clearFormBtn) clearFormBtn.addEventListener('click', clearFormInputs);
+        if (printBtn) printBtn.addEventListener('click', () => handleSaveAction(true));
+        if (saveOnlyBtn) saveOnlyBtn.addEventListener('click', () => handleSaveAction(false));
+        if (saveAndPreviewBtn) saveAndPreviewBtn.addEventListener('click', handleSaveAndPreview); 
+        if (clearCurrentListBtn) clearCurrentListBtn.addEventListener('click', () => currentInvoiceItems = [] || renderSalesList());
+        
+        if (addNewProductBtn) addNewProductBtn.addEventListener('click', addNewProduct);
+        if (addNewStoreBtn) addNewStoreBtn.addEventListener('click', addNewStore);
+        if (addNewSellerBtn) addNewSellerBtn.addEventListener('click', addNewSeller);
+
+        if (dashboardNavBtn) dashboardNavBtn.addEventListener('click', () => toggleView('dashboard'));
+        if (customerInfoNavBtn) customerInfoNavBtn.addEventListener('click', () => toggleView('customerInfo'));
+        if (addItemNavBtn) addItemNavBtn.addEventListener('click', () => toggleView('addItem'));
+        if (storeOptionsNavBtn) storeOptionsNavBtn.addEventListener('click', () => toggleView('storeOptions'));
+        if (sellerOptionsNavBtn) sellerOptionsNavBtn.addEventListener('click', () => toggleView('sellerOptions'));
+        if (updatePaymentNavBtn) updatePaymentNavBtn.addEventListener('click', () => toggleView('updatePayment'));
+        if (receiptSettingsNavBtn) receiptSettingsNavBtn.addEventListener('click', () => toggleView('receiptSettings')); // NEW
+        if (historyNavBtn) historyNavBtn.addEventListener('click', () => toggleView('history'));
+
+        // Save Receipt Settings Logic
+        if (saveReceiptSettingsBtn) {
+            saveReceiptSettingsBtn.addEventListener('click', () => {
+                receiptSettings = {
+                    titleSize: parseInt(rsTitleSize.value), titleBold: rsTitleBold.checked,
+                    dateSize: parseInt(rsDateSize.value), dateBold: rsDateBold.checked,
+                    infoSize: parseInt(rsInfoSize.value), infoBold: rsInfoBold.checked,
+                    headerSize: parseInt(rsHeaderSize.value), headerBold: rsHeaderBold.checked,
+                    rowSize: parseInt(rsRowSize.value), rowBold: rsRowBold.checked,
+                    totalSize: parseInt(rsTotalSize.value), totalBold: rsTotalBold.checked,
+                    noteSize: parseInt(rsNoteSize.value), noteBold: rsNoteBold.checked,
+                    lineHeight: parseFloat(rsLineHeight.value) || 1.2,
+                    marginLeft: parseFloat(rsMarginLeft.value) || 0,
+                    marginRight: parseFloat(rsMarginRight.value) || 0
+                };
+                localStorage.setItem('receiptSettings', JSON.stringify(receiptSettings));
+                showMessage('ការកំណត់វិក្កយបត្រត្រូវបានរក្សាទុក!');
+            });
+        }
+
+        // Dashboard Listeners
+        if(startDateInput) startDateInput.addEventListener('change', updateDashboard);
+        if(endDateInput) endDateInput.addEventListener('change', updateDashboard);
+        if(dashboardDeliveryFilter) dashboardDeliveryFilter.addEventListener('change', updateDashboard);
+        if(dashboardPaymentStatusFilter) dashboardPaymentStatusFilter.addEventListener('change', updateDashboard);
+        if(dashboardSellerFilter) dashboardSellerFilter.addEventListener('change', updateDashboard);
+        
+        if (itemsPerPageSelect) {
+            itemsPerPageSelect.addEventListener('change', () => {
+                currentPage = 1;
+                renderHistoryList();
+            });
+        }
+        
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', selectAllInvoices);
+        }
+        
+        if (downloadDataBtn) {
+            downloadDataBtn.addEventListener('click', downloadDataAsCsv);
+        }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (['itemName', 'itemQuantity', 'itemPrice'].includes(e.target.id)) {
+                    e.preventDefault(); addItem(); 
+                } else if (e.target.id === 'searchUpdateInvoiceInput') {
+                    e.preventDefault(); btnSearchUpdateInvoice.click();
+                }
+            }
+        });
+        
+        itemNameInput.addEventListener('input', () => {
+            const prod = products.find(p => p.name === itemNameInput.value.trim());
+            if(prod) itemPriceInput.value = (prod.price || 0).toFixed(2);
+        });
+
+        toggleView('dashboard');
+    </script>
+</body>
+</html>
