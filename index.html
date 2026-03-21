@@ -258,7 +258,7 @@
             <div class="flex items-center gap-4 mb-2 sm:mb-0">
                 <div class="flex items-center space-x-1 overflow-x-auto pb-1 sm:space-x-2">
                     <button id="dashboardNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-white bg-indigo-900 hover:bg-indigo-800 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
                         <span class="whitespace-nowrap">ផ្ទាំងគ្រប់គ្រង</span>
                     </button>
                     <button id="customerInfoNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
@@ -629,7 +629,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg រក្សាទុក និង មើលវិក្កយបត្រ
+                            </svg> រក្សាទុក និង មើលវិក្កយបត្រ
                         </button>
                     </div>
                 </div>
@@ -935,7 +935,7 @@
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         setLogLevel('debug');
         
-        const firebaseConfig = {
+        let firebaseConfig = {
             apiKey: "AIzaSyDx53uucVLn2qZpKHgm4Zfmn0oq7IqWKDE",
             authDomain: "my-online-sale-re.firebaseapp.com",
             projectId: "my-online-sale-re",
@@ -944,6 +944,12 @@
             appId: "1:897696868123:web:a1c31ba969f90ababb15be",
             measurementId: "G-RP5KG6GY4Y"
         };
+        
+        // Use environment provided configuration if available, otherwise fallback to the hardcoded ones above
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        }
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
 
         let db = null;
@@ -960,6 +966,7 @@
         let sellers = []; 
         let currentInvoiceItems = [];
         let isAuthReady = false;
+        let lastAutoFilledPhone = ''; // Added to track auto-filled phone
         
         let itemsPerPage = 10; 
         let currentPage = 1;
@@ -2537,6 +2544,41 @@
             printWindow.print();
         };
 
+        // NEW: Print Multiple Selected Invoices at once
+        const printMultipleInvoices = (invoiceIdsSet) => {
+            const invoicesToPrint = historyInvoices.filter(inv => invoiceIdsSet.has(inv.id));
+            if (invoicesToPrint.length === 0) return;
+
+            const printWindow = window.open('', '_blank', 'height=600,width=800');
+            const s = receiptSettings;
+            const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
+            const mr = s.marginRight !== undefined ? s.marginRight : 4;
+            
+            printWindow.document.write(`<html><head><title>បោះពុម្ពវិក្កយបត្រចំនួន ${invoicesToPrint.length}</title><style>
+                @page { size: 80mm auto; margin: 0; } 
+                body {font-family: "Khmer OS Battambang", Arial, sans-serif; line-height: ${s.lineHeight || 1.2}; color: #000; margin: 0; padding: 0; margin-left: ${ml}mm; margin-right: ${mr}mm;} 
+                table {width: 100%; border-collapse: collapse;} 
+                th, td {padding: 2px 0; text-align: left;}
+                .page-break { page-break-after: always; margin-bottom: 20px; }
+                .page-break:last-child { page-break-after: auto; margin-bottom: 0; }
+            </style></head><body>`);
+            
+            // Loop through each selected invoice and append to print window
+            invoicesToPrint.forEach((inv) => {
+                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber);
+                printWindow.document.write(`<div class="page-break">${invoiceHTML}</div>`);
+            });
+            
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Timeout allows the browser rendering to finish layouting
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        };
+
         const downloadDataAsCsv = async () => {
             try {
                 const filterStartDate = historyStartDateInput.value ? new Date(historyStartDateInput.value) : null;
@@ -2663,10 +2705,22 @@
         auth = getAuth(app);
         db = getFirestore(app);
         
-        signInAnonymously(auth).then((userCred) => {
-            userId = userCred.user.uid;
-            loadPublicData();
-        }).catch((error) => console.error("Auth failed", error));
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    userId = userCred.user.uid;
+                } else {
+                    const userCred = await signInAnonymously(auth);
+                    userId = userCred.user.uid;
+                }
+                loadPublicData();
+            } catch (error) {
+                console.error("Auth failed", error);
+            }
+        };
+
+        initAuth();
 
         // Listeners
         if(modalOkBtn) modalOkBtn.addEventListener('click', () => messageModal.style.display = 'none');
@@ -2689,8 +2743,36 @@
             });
         }
         
+        // NEW MODIFIED: Auto-fill customer data
         customerPhoneInput.addEventListener('input', (e) => {
             formatPhoneNumber(e.target);
+            const cleaned = cleanPhoneNumber(e.target.value);
+            
+            // Check when phone number seems complete (9+ digits without zeros)
+            if (cleaned.length >= 9 && cleaned !== lastAutoFilledPhone) {
+                let existingInvoice = null;
+                let latestTime = 0;
+                
+                // Find most recent invoice by this phone
+                for (const inv of historyInvoices) {
+                    if (cleanPhoneNumber(inv.customerPhone) === cleaned) {
+                        const t = inv.timestamp.toDate().getTime();
+                        if (t > latestTime) {
+                            latestTime = t;
+                            existingInvoice = inv;
+                        }
+                    }
+                }
+                
+                if (existingInvoice && existingInvoice.customerName) {
+                    customerNameInput.value = existingInvoice.customerName || '';
+                    customerAddressInput.value = existingInvoice.customerAddress || '';
+                    lastAutoFilledPhone = cleaned; // Mark as filled so we don't spam
+                    showMessage(`រកឃើញអតិថិជនចាស់៖ ${existingInvoice.customerName} (ទិន្នន័យត្រូវបានបំពេញដោយស្វ័យប្រវត្តិ)`);
+                }
+            } else if (cleaned.length < 9) {
+                lastAutoFilledPhone = ''; // Reset tracker
+            }
         });
 
         paymentNotesInput.addEventListener('input', () => {
@@ -2786,6 +2868,17 @@
             selectAllBtn.addEventListener('click', selectAllInvoices);
         }
         
+        // NEW: Event Listener for Print Selected Invoices Button
+        if (printSelectedBtn) {
+            printSelectedBtn.addEventListener('click', () => {
+                if (selectedInvoiceIds.size === 0) {
+                    showMessage('សូមជ្រើសរើសវិក្កយបត្រយ៉ាងតិចមួយដើម្បីបោះពុម្ព។');
+                    return;
+                }
+                printMultipleInvoices(selectedInvoiceIds);
+            });
+        }
+
         if (downloadDataBtn) {
             downloadDataBtn.addEventListener('click', downloadDataAsCsv);
         }
