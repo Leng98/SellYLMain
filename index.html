@@ -564,23 +564,29 @@
                         </div>
                     </div>
                     
-                    <div class="flex justify-center md:justify-end space-x-4 mt-6 flex-wrap">
-                        <button id="saveAndPreviewBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-lg flex items-center mb-2 md:mb-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            រក្សាទុក និង មើលវិក្កយបត្រ
-                        </button>
-                        <button id="saveOnlyBtn" class="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-300 shadow-lg mb-2 md:mb-0">
-                            រក្សាទុកតែប៉ុណ្ណោះ
-                        </button>
-                        <button id="printBtn" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-lg mb-2 md:mb-0">
-                            បោះពុម្ពវិក្កយបត្រ
-                        </button>
-                        <button id="clearCurrentListBtn" class="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300 shadow-lg mb-2 md:mb-0">
-                            ជម្រះបញ្ជីបច្ចុប្បន្ន
-                        </button>
+                    <div class="flex flex-col md:flex-row justify-between items-center mt-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <input type="checkbox" id="quickHideTotals" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                            <label for="quickHideTotals" class="ml-2 font-semibold text-gray-800 cursor-pointer">លាក់តម្លៃសរុបពេលបោះពុម្ព (Hide Totals)</label>
+                        </div>
+                        <div class="flex justify-center md:justify-end space-x-4 flex-wrap">
+                            <button id="saveAndPreviewBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-lg flex items-center mb-2 md:mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                រក្សាទុក និង មើលវិក្កយបត្រ
+                            </button>
+                            <button id="saveOnlyBtn" class="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-300 shadow-lg mb-2 md:mb-0">
+                                រក្សាទុកតែប៉ុណ្ណោះ
+                            </button>
+                            <button id="printBtn" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-lg mb-2 md:mb-0">
+                                បោះពុម្ពវិក្កយបត្រ
+                            </button>
+                            <button id="clearCurrentListBtn" class="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300 shadow-lg mb-2 md:mb-0">
+                                ជម្រះបញ្ជីបច្ចុប្បន្ន
+                            </button>
+                        </div>
                     </div>
              </div>
 
@@ -622,15 +628,21 @@
                         </div>
                     </div>
                     
-                    <div class="flex justify-end mt-6 space-x-3 flex-wrap gap-y-2">
-                        <button id="btnCancelUpdatePayment" class="px-5 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
-                        <button id="btnSaveUpdatedPayment" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-sm font-medium">រក្សាទុកការកែប្រែ</button>
-                        <button id="btnSaveAndPreviewUpdatedPayment" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-sm font-medium flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg> រក្សាទុក និង មើលវិក្កយបត្រ
-                        </button>
+                    <div class="flex flex-col md:flex-row justify-between items-center mt-6 pt-4 border-t border-gray-200 gap-y-4">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="updateHideTotals" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                            <label for="updateHideTotals" class="ml-2 font-semibold text-gray-800 cursor-pointer">លាក់តម្លៃសរុបពេលបោះពុម្ព</label>
+                        </div>
+                        <div class="flex space-x-3 flex-wrap gap-y-2">
+                            <button id="btnCancelUpdatePayment" class="px-5 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
+                            <button id="btnSaveUpdatedPayment" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 shadow-sm font-medium">រក្សាទុកការកែប្រែ</button>
+                            <button id="btnSaveAndPreviewUpdatedPayment" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 shadow-sm font-medium flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg> រក្សាទុក និង មើលវិក្កយបត្រ
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -642,6 +654,11 @@
                         <h2 class="text-xl font-semibold text-gray-700 mb-6 border-b pb-2">Option Template (កំណត់រចនា)</h2>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="border p-3 rounded-md bg-gray-50 sm:col-span-2 flex items-center space-x-2">
+                                <input type="checkbox" id="rsHideTotals" class="w-5 h-5 text-indigo-600 border-gray-300 rounded">
+                                <label for="rsHideTotals" class="font-semibold text-gray-800">លាក់តម្លៃសរុបផ្នែកខាងក្រោមជាអចិន្ត្រៃយ៍ (តម្លៃទំនិញ, សេវាដឹក, សរុបទាំងអស់)</label>
+                            </div>
+
                             <div class="border p-3 rounded-md bg-gray-50">
                                 <label class="block font-semibold text-gray-800 mb-2">ចំណងជើងហាង</label>
                                 <div class="flex items-center space-x-2">
@@ -717,6 +734,14 @@
                                 <div class="flex items-center space-x-2">
                                     <label class="text-sm text-gray-600">ទំហំ:</label>
                                     <input type="number" id="rsLineHeight" step="0.1" class="w-16 border rounded p-1 text-center" min="1" max="3">
+                                </div>
+                            </div>
+
+                            <div class="border p-3 rounded-md bg-gray-50">
+                                <label class="block font-semibold text-gray-800 mb-2">គម្លាតបន្ទាត់ផ្នែកសរុបខាងក្រោម</label>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm text-gray-600">ទំហំ:</label>
+                                    <input type="number" id="rsFooterLineHeight" step="0.1" class="w-16 border rounded p-1 text-center" min="1" max="4">
                                 </div>
                             </div>
 
@@ -891,13 +916,17 @@
                         </div>
                         
                         <div class="flex justify-between items-center mb-4 mt-6 flex-wrap gap-2">
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 flex-wrap gap-y-2">
                                 <button id="selectAllBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition duration-300 shadow-sm flex items-center gap-2">
                                     ជ្រើសរើសទាំងអស់
                                 </button>
                                 <button id="printSelectedBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm flex items-center gap-2 hidden">
                                     បោះពុម្ពដែលបានជ្រើសរើស
                                 </button>
+                                <div class="flex items-center bg-yellow-50 px-3 py-2 rounded-md border border-yellow-200">
+                                    <input type="checkbox" id="historyHideTotals" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                    <label for="historyHideTotals" class="ml-2 text-sm font-semibold text-gray-800 cursor-pointer">លាក់តម្លៃសរុប</label>
+                                </div>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <label for="itemsPerPageSelect" class="text-sm text-gray-700">បង្ហាញ:</label>
@@ -980,9 +1009,11 @@
             rowSize: 14, rowBold: false,
             totalSize: 14, totalBold: true,
             noteSize: 14, noteBold: true,
-            lineHeight: 1.2,
+            lineHeight: 1.5,
+            footerLineHeight: 1.5,
             marginLeft: -6,    // Default margins
-            marginRight: 4
+            marginRight: 4,
+            hideTotals: false // NEW default setting
         };
         let receiptSettings = JSON.parse(localStorage.getItem('receiptSettings')) || defaultReceiptSettings;
 
@@ -1125,6 +1156,7 @@
         const dashboardDeliveryFilter = document.getElementById('dashboardDeliveryFilter');
         const dashboardPaymentStatusFilter = document.getElementById('dashboardPaymentStatusFilter');
 
+        const rsHideTotals = document.getElementById('rsHideTotals'); // Global Setting
         const rsTitleSize = document.getElementById('rsTitleSize');
         const rsTitleBold = document.getElementById('rsTitleBold');
         const rsDateSize = document.getElementById('rsDateSize');
@@ -1140,9 +1172,14 @@
         const rsNoteSize = document.getElementById('rsNoteSize');
         const rsNoteBold = document.getElementById('rsNoteBold');
         const rsLineHeight = document.getElementById('rsLineHeight');
+        const rsFooterLineHeight = document.getElementById('rsFooterLineHeight');
         const rsMarginLeft = document.getElementById('rsMarginLeft');
         const rsMarginRight = document.getElementById('rsMarginRight');
         const saveReceiptSettingsBtn = document.getElementById('saveReceiptSettingsBtn');
+
+        const quickHideTotals = document.getElementById('quickHideTotals'); // Sales View Toggle
+        const historyHideTotals = document.getElementById('historyHideTotals'); // History View Toggle
+        const updateHideTotals = document.getElementById('updateHideTotals'); // Update View Toggle
         
         let confirmationCallback = null;
 
@@ -1763,7 +1800,36 @@
                 return matchesDate && (query.length === 0 || matchesSearch);
             });
             
-            filteredInvoices.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
+            // Apply Sort Logic
+            if (sortBy === 'newest') {
+                filteredInvoices.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
+            } else if (sortBy === 'oldest') {
+                filteredInvoices.sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate());
+            } else if (sortBy === 'phnom_penh_first') {
+                filteredInvoices.sort((a, b) => {
+                    const aIsPP = (a.deliveryOption === 'ភ្នំពេញ') ? -1 : 1;
+                    const bIsPP = (b.deliveryOption === 'ភ្នំពេញ') ? -1 : 1;
+                    return aIsPP - bIsPP || b.timestamp.toDate() - a.timestamp.toDate();
+                });
+            } else if (sortBy === 'province_first') {
+                 filteredInvoices.sort((a, b) => {
+                    const aIsProv = (a.deliveryOption !== 'ភ្នំពេញ' && a.deliveryOption !== 'មិនបានជ្រើសរើស') ? -1 : 1;
+                    const bIsProv = (b.deliveryOption !== 'ភ្នំពេញ' && b.deliveryOption !== 'មិនបានជ្រើសរើស') ? -1 : 1;
+                    return aIsProv - bIsProv || b.timestamp.toDate() - a.timestamp.toDate();
+                });
+            } else if (sortBy === 'paid_first') {
+                 filteredInvoices.sort((a, b) => {
+                    const aPaid = !['មិនទាន់វេទឹកប្រាក់', 'Unpaid'].includes(a.paymentOption) ? -1 : 1;
+                    const bPaid = !['មិនទាន់វេទឹកប្រាក់', 'Unpaid'].includes(b.paymentOption) ? -1 : 1;
+                    return aPaid - bPaid || b.timestamp.toDate() - a.timestamp.toDate();
+                });
+            } else if (sortBy === 'unpaid_first') {
+                 filteredInvoices.sort((a, b) => {
+                    const aUnpaid = ['មិនទាន់វេទឹកប្រាក់', 'Unpaid'].includes(a.paymentOption) ? -1 : 1;
+                    const bUnpaid = ['មិនទាន់វេទឹកប្រាក់', 'Unpaid'].includes(b.paymentOption) ? -1 : 1;
+                    return aUnpaid - bUnpaid || b.timestamp.toDate() - a.timestamp.toDate();
+                });
+            }
 
             const totalItems = filteredInvoices.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -1958,7 +2024,7 @@
             });
         };
 
-        const generateInvoiceHTML = (invoiceData, invoiceNumber) => {
+        const generateInvoiceHTML = (invoiceData, invoiceNumber, forceHideTotals = null) => {
             const now = invoiceData.timestamp ? invoiceData.timestamp : new Date();
             const dateObj = (typeof now.toDate === 'function') ? now.toDate() : now;
             
@@ -1983,57 +2049,73 @@
 
             // Load settings
             const s = receiptSettings;
+            const hideTotals = forceHideTotals !== null ? forceHideTotals : s.hideTotals;
+            const lineHeightStr = s.lineHeight || 1.5;
+            const footerLineHeightStr = s.footerLineHeight || 1.5;
 
             let html = `
-                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${s.lineHeight || 1.2}; color: #000; text-align: left; background-color: #fff;">
+                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${lineHeightStr}; color: #000; text-align: left; background-color: #fff;">
                     <h1 style="font-size: ${s.titleSize}px; font-weight: ${s.titleBold ? 'bold' : 'normal'}; text-align: center; margin-bottom: 5px;">${storeName}</h1>
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
                         <div style="flex: 1; text-align: left;">${formattedDate}</div>
                         <div style="flex: 1; text-align: center; white-space: nowrap;">By: ${sellerName}</div>
                         <div style="flex: 1; text-align: right;">${invoiceNumber}</div>
                     </div>
 
-                    <div style="margin-bottom: 5px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'};">
-                        <p style="margin: 0;">អតិថិជន: <strong>${customerName}</strong></p>
-                        <p style="margin: 0;">ទូរស័ព្ទ: <strong>${customerPhone}</strong></p>
-                        <p style="margin: 0;">អាសយដ្ឋាន: <strong>${customerAddress}</strong></p>
-                        <p style="margin: 0;">ដឹកតាម: <strong>${deliveryOption}</strong> | ទូទាត់: <strong>${paymentOption}</strong></p>
-                        <p style="margin: 0;">Note: ${paymentNotes}</p>
+                    <div style="margin-bottom: 8px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">
+                        <p style="margin: 0; padding-bottom: 4px;">អតិថិជន: <strong>${customerName}</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">ទូរស័ព្ទ: <strong>${customerPhone}</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">អាសយដ្ឋាន: <strong>${customerAddress}</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">ដឹកតាម: <strong>${deliveryOption}</strong> | ទូទាត់: <strong>${paymentOption}</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">Note: ${paymentNotes}</p>
                     </div>
                     <hr style="border-top: 1px dashed #000; margin-bottom: 5px;">
                     <table style="width: 100%; border-collapse: collapse; font-size: ${s.rowSize}px; font-weight: ${s.rowBold ? 'bold' : 'normal'};">
                         <thead>
                             <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
-                                <th style="text-align: left; padding-bottom: 2px;">ឈ្មោះទំនិញ</th>
-                                <th style="text-align: right; padding-bottom: 2px;">ចំនួន</th>
-                                <th style="text-align: right; padding-bottom: 2px;">សរុប</th>
+                                <th style="text-align: left; padding-bottom: 4px;">ឈ្មោះទំនិញ</th>
+                                <th style="text-align: right; padding-bottom: 4px;">ចំនួន</th>
+                                <th style="text-align: right; padding-bottom: 4px;">សរុប</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
             invoiceData.items.forEach((item, index) => {
                 html += `<tr>
-                    <td style="padding: 2px 0; vertical-align: top;">
-                        <div style="display: flex; align-items: flex-start;">
+                    <td style="padding: 4px 0; vertical-align: top;">
+                        <div style="display: flex; align-items: flex-start; line-height: ${lineHeightStr};">
                             <span style="min-width: 20px; display: inline-block;">${index + 1}.</span>
                             <span style="flex: 1; word-break: break-word;">${item.name}</span>
                         </div>
                     </td>
-                    <td style="text-align: right; padding: 2px 0; vertical-align: top;">${item.quantity}</td>
-                    <td style="text-align: right; padding: 2px 0; vertical-align: top;">$${item.total.toFixed(2)}</td>
+                    <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">${item.quantity}</td>
+                    <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$${item.total.toFixed(2)}</td>
                 </tr>`;
             });
             html += `
-                        </tbody>
-                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'};">
-                            <tr><td colspan="2" style="text-align: right; padding-top: 5px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 5px;">$${salesTotal.toFixed(2)}</td></tr>
-                            <tr><td colspan="2" style="text-align: right;">តម្លៃសេវាដឹក:</td><td style="text-align: right;">$${deliveryFee.toFixed(2)}</td></tr>
-                            <tr><td colspan="2" style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
+                        </tbody>`;
+            
+            if (!hideTotals) {
+                html += `
+                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$${salesTotal.toFixed(2)}</td></tr>
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td></tr>
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
                         </tfoot>
+                `;
+            } else {
+                html += `
+                        <tfoot style="border-top: 1px dashed #000;">
+                            <tr><td colspan="3" style="padding-top: 2px;"></td></tr>
+                        </tfoot>
+                `;
+            }
+            
+            html += `
                     </table>
                     
-                    ${generalNote ? `<div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'};">${generalNote}</div>` : ''}
+                    ${generalNote ? `<div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">${generalNote}</div>` : ''}
                 </div>
             `;
             return html;
@@ -2060,7 +2142,7 @@
             else if (viewToShow === 'updatePayment') { updatePaymentView.style.display = 'block'; }
             else if (viewToShow === 'receiptSettings') { 
                 receiptSettingsView.style.display = 'block'; 
-                // Populate current settings into inputs
+                rsHideTotals.checked = receiptSettings.hideTotals || false;
                 rsTitleSize.value = receiptSettings.titleSize;
                 rsTitleBold.checked = receiptSettings.titleBold;
                 rsDateSize.value = receiptSettings.dateSize;
@@ -2075,7 +2157,8 @@
                 rsTotalBold.checked = receiptSettings.totalBold;
                 rsNoteSize.value = receiptSettings.noteSize;
                 rsNoteBold.checked = receiptSettings.noteBold;
-                rsLineHeight.value = receiptSettings.lineHeight || 1.2;
+                rsLineHeight.value = receiptSettings.lineHeight || 1.5;
+                rsFooterLineHeight.value = receiptSettings.footerLineHeight || 1.5;
                 rsMarginLeft.value = receiptSettings.marginLeft !== undefined ? receiptSettings.marginLeft : -6;
                 rsMarginRight.value = receiptSettings.marginRight !== undefined ? receiptSettings.marginRight : 4;
                 
@@ -2092,7 +2175,6 @@
             return `${year}-${month}-${day}`;
         };
 
-        // NEW: Render Receipt Demo using Live Settings
         const renderReceiptDemo = () => {
             const s = {
                 titleSize: parseInt(rsTitleSize.value) || 16, titleBold: rsTitleBold.checked,
@@ -2102,8 +2184,12 @@
                 rowSize: parseInt(rsRowSize.value) || 14, rowBold: rsRowBold.checked,
                 totalSize: parseInt(rsTotalSize.value) || 14, totalBold: rsTotalBold.checked,
                 noteSize: parseInt(rsNoteSize.value) || 14, noteBold: rsNoteBold.checked,
-                lineHeight: parseFloat(rsLineHeight.value) || 1.2
+                lineHeight: parseFloat(rsLineHeight.value) || 1.5,
+                footerLineHeight: parseFloat(rsFooterLineHeight.value) || 1.5,
+                hideTotals: rsHideTotals.checked 
             };
+            const lineHeightStr = s.lineHeight || 1.5;
+            const footerLineHeightStr = s.footerLineHeight || 1.5;
 
             const day = new Date().getDate();
             const month = new Date().getMonth() + 1;
@@ -2111,75 +2197,86 @@
             const formattedDate = `${day}/${month}/${year}`;
 
             let html = `
-                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${s.lineHeight}; color: #000; text-align: left; background-color: #fff;">
+                <div style="width: 80mm; margin: 0 auto; padding: 5mm; box-sizing: border-box; font-family: 'Khmer OS Battambang', 'Khmer OS', sans-serif; font-size: ${s.infoSize}px; line-height: ${lineHeightStr}; color: #000; text-align: left; background-color: #fff;">
                     <h1 style="font-size: ${s.titleSize}px; font-weight: ${s.titleBold ? 'bold' : 'normal'}; text-align: center; margin-bottom: 5px;">ឈ្មោះហាងសាកល្បង</h1>
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: ${s.dateSize}px; font-weight: ${s.dateBold ? 'bold' : 'normal'};">
                         <div style="flex: 1; text-align: left;">${formattedDate}</div>
                         <div style="flex: 1; text-align: center; white-space: nowrap;">By: អ្នកលក់</div>
                         <div style="flex: 1; text-align: right;">C0000000</div>
                     </div>
 
-                    <div style="margin-bottom: 5px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'};">
-                        <p style="margin: 0;">អតិថិជន: <strong>ឈ្មោះអតិថិជន</strong></p>
-                        <p style="margin: 0;">ទូរស័ព្ទ: <strong>012 345 678</strong></p>
-                        <p style="margin: 0;">អាសយដ្ឋាន: <strong>ភ្នំពេញ</strong></p>
-                        <p style="margin: 0;">ដឹកតាម: <strong>VET</strong> | ទូទាត់: <strong>ABA</strong></p>
-                        <p style="margin: 0;">Note: TxD 123456</p>
+                    <div style="margin-bottom: 8px; font-size: ${s.infoSize}px; font-weight: ${s.infoBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">
+                        <p style="margin: 0; padding-bottom: 4px;">អតិថិជន: <strong>ឈ្មោះអតិថិជន</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">ទូរស័ព្ទ: <strong>012 345 678</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">អាសយដ្ឋាន: <strong>ភ្នំពេញ</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">ដឹកតាម: <strong>VET</strong> | ទូទាត់: <strong>ABA</strong></p>
+                        <p style="margin: 0; padding-bottom: 4px;">Note: TxD 123456</p>
                     </div>
                     <hr style="border-top: 1px dashed #000; margin-bottom: 5px;">
                     <table style="width: 100%; border-collapse: collapse; font-size: ${s.rowSize}px; font-weight: ${s.rowBold ? 'bold' : 'normal'};">
                         <thead>
                             <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
-                                <th style="text-align: left; padding-bottom: 2px;">ឈ្មោះទំនិញ</th>
-                                <th style="text-align: right; padding-bottom: 2px;">ចំនួន</th>
-                                <th style="text-align: right; padding-bottom: 2px;">សរុប</th>
+                                <th style="text-align: left; padding-bottom: 4px;">ឈ្មោះទំនិញ</th>
+                                <th style="text-align: right; padding-bottom: 4px;">ចំនួន</th>
+                                <th style="text-align: right; padding-bottom: 4px;">សរុប</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding: 2px 0; vertical-align: top;">
-                                    <div style="display: flex; align-items: flex-start;">
+                                <td style="padding: 4px 0; vertical-align: top;">
+                                    <div style="display: flex; align-items: flex-start; line-height: ${lineHeightStr};">
                                         <span style="min-width: 20px; display: inline-block;">1.</span>
                                         <span style="flex: 1; word-break: break-word;">ឡេការពារកម្តៅថ្ងៃ (ប្រភេទលាបមុខការពារបានយូរ)</span>
                                     </div>
                                 </td>
-                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">1</td>
-                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">$15.00</td>
+                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">1</td>
+                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$15.00</td>
                             </tr>
                             <tr>
-                                <td style="padding: 2px 0; vertical-align: top;">
-                                    <div style="display: flex; align-items: flex-start;">
+                                <td style="padding: 4px 0; vertical-align: top;">
+                                    <div style="display: flex; align-items: flex-start; line-height: ${lineHeightStr};">
                                         <span style="min-width: 20px; display: inline-block;">2.</span>
                                         <span style="flex: 1; word-break: break-word;">សេរ៉ូមបំប៉នស្បែកមុខ</span>
                                     </div>
                                 </td>
-                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">2</td>
-                                <td style="text-align: right; padding: 2px 0; vertical-align: top;">$20.00</td>
+                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">2</td>
+                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$20.00</td>
                             </tr>
-                        </tbody>
-                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'};">
-                            <tr><td colspan="2" style="text-align: right; padding-top: 5px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 5px;">$35.00</td></tr>
-                            <tr><td colspan="2" style="text-align: right;">តម្លៃសេវាដឹក:</td><td style="text-align: right;">$1.50</td></tr>
-                            <tr><td colspan="2" style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
+                        </tbody>`;
+            
+            if (!s.hideTotals) {
+                html += `
+                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$35.00</td></tr>
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$1.50</td></tr>
+                            <tr><td colspan="2" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
                         </tfoot>
+                `;
+            } else {
+                html += `
+                        <tfoot style="border-top: 1px dashed #000;">
+                            <tr><td colspan="3" style="padding-top: 2px;"></td></tr>
+                        </tfoot>
+                `;
+            }
+            
+            html += `
                     </table>
                     
-                    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'};">សូមអរគុណសម្រាប់ការគាំទ្រ!</div>
+                    <div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">សូមអរគុណសម្រាប់ការគាំទ្រ!</div>
                 </div>
             `;
             document.getElementById('receiptDemoContainer').innerHTML = html;
         };
 
-        // Attach listeners to all setting inputs to update demo instantly
-        [rsTitleSize, rsTitleBold, rsDateSize, rsDateBold, rsInfoSize, rsInfoBold, rsHeaderSize, rsHeaderBold, rsRowSize, rsRowBold, rsTotalSize, rsTotalBold, rsNoteSize, rsNoteBold, rsLineHeight, rsMarginLeft, rsMarginRight].forEach(el => {
+        [rsHideTotals, rsTitleSize, rsTitleBold, rsDateSize, rsDateBold, rsInfoSize, rsInfoBold, rsHeaderSize, rsHeaderBold, rsRowSize, rsRowBold, rsTotalSize, rsTotalBold, rsNoteSize, rsNoteBold, rsLineHeight, rsFooterLineHeight, rsMarginLeft, rsMarginRight].forEach(el => {
             if(el) {
                 el.addEventListener('input', renderReceiptDemo);
                 el.addEventListener('change', renderReceiptDemo);
             }
         });
 
-        // --- NEW: Update Payment View Logic ---
         btnSearchUpdateInvoice.addEventListener('click', () => {
             const query = searchUpdateInvoiceInput.value.trim().toLowerCase();
             if(!query) return showMessage('សូមបញ្ចូលលេខវិក្កយបត្រដើម្បីស្វែងរក!');
@@ -2300,7 +2397,8 @@
                     paymentNotes: txd
                 };
                 
-                const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber);
+                const hideTotals = document.getElementById('updateHideTotals').checked;
+                const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber, hideTotals);
                 await showImagePreview(generatedHtml);
 
                 updatePaymentFormContainer.classList.add('hidden');
@@ -2400,7 +2498,7 @@
             });
         }
 
-        const saveInvoiceTransaction = async (invoiceDetails, shouldPrint) => {
+        const saveInvoiceTransaction = async (invoiceDetails, shouldPrint, forceHideTotals = null) => {
             const { customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote } = invoiceDetails;
             try {
                 const newInvoiceNumber = 'C' + (historyInvoices.length + 1).toString().padStart(7, '0');
@@ -2410,7 +2508,7 @@
                 };
                 await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                 if (shouldPrint) {
-                    printInvoice(invoiceData, newInvoiceNumber);
+                    printInvoice(invoiceData, newInvoiceNumber, forceHideTotals);
                     showMessage('វិក្កយបត្រត្រូវបានបោះពុម្ព។');
                 } else {
                     showMessage('ទិន្នន័យត្រូវបានរក្សាទុក។');
@@ -2429,6 +2527,7 @@
             const sellerName = getSellerName();
             const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
             const paymentNotes = paymentNotesInput.value.trim();
+            const hideTotals = document.getElementById('quickHideTotals').checked;
             
             if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
                 showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
@@ -2453,7 +2552,7 @@
                            customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
                            paymentOption: getPaymentOptions(), paymentNotes, 
                            deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
-                        }, shouldPrint);
+                        }, shouldPrint, hideTotals);
                      };
                      return; 
                  }
@@ -2463,7 +2562,7 @@
                customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
                paymentOption: getPaymentOptions(), paymentNotes, 
                deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
-            }, shouldPrint);
+            }, shouldPrint, hideTotals);
         };
 
         const handleSaveAndPreview = async () => {
@@ -2474,6 +2573,7 @@
             const sellerName = getSellerName();
             const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
             const paymentNotes = paymentNotesInput.value.trim();
+            const hideTotals = document.getElementById('quickHideTotals').checked;
             
             if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
                 showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
@@ -2491,7 +2591,7 @@
                     
                     await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                     
-                    const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber);
+                    const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber, hideTotals);
                     await showImagePreview(generatedHtml);
 
                     currentInvoiceItems = [];
@@ -2527,11 +2627,12 @@
         const reprintInvoice = async (event) => {
             const docId = event.currentTarget.dataset.docId;
             const invoice = historyInvoices.find(inv => inv.id === docId);
-            if (invoice) printInvoice(invoice, invoice.invoiceNumber);
+            const hideTotals = document.getElementById('historyHideTotals').checked;
+            if (invoice) printInvoice(invoice, invoice.invoiceNumber, hideTotals);
         };
 
-        const printInvoice = (invoiceData, invoiceNumber) => {
-            const invoiceHTML = generateInvoiceHTML(invoiceData, invoiceNumber);
+        const printInvoice = (invoiceData, invoiceNumber, forceHideTotals = null) => {
+            const invoiceHTML = generateInvoiceHTML(invoiceData, invoiceNumber, forceHideTotals);
             const printWindow = window.open('', '_blank', 'height=600,width=800');
             const s = receiptSettings;
             const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
@@ -2544,7 +2645,6 @@
             printWindow.print();
         };
 
-        // NEW: Print Multiple Selected Invoices at once
         const printMultipleInvoices = (invoiceIdsSet) => {
             const invoicesToPrint = historyInvoices.filter(inv => invoiceIdsSet.has(inv.id));
             if (invoicesToPrint.length === 0) return;
@@ -2553,6 +2653,7 @@
             const s = receiptSettings;
             const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
             const mr = s.marginRight !== undefined ? s.marginRight : 4;
+            const hideTotals = document.getElementById('historyHideTotals').checked;
             
             printWindow.document.write(`<html><head><title>បោះពុម្ពវិក្កយបត្រចំនួន ${invoicesToPrint.length}</title><style>
                 @page { size: 80mm auto; margin: 0; } 
@@ -2563,9 +2664,8 @@
                 .page-break:last-child { page-break-after: auto; margin-bottom: 0; }
             </style></head><body>`);
             
-            // Loop through each selected invoice and append to print window
             invoicesToPrint.forEach((inv) => {
-                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber);
+                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber, hideTotals);
                 printWindow.document.write(`<div class="page-break">${invoiceHTML}</div>`);
             });
             
@@ -2573,9 +2673,19 @@
             printWindow.document.close();
             printWindow.focus();
             
-            // Timeout allows the browser rendering to finish layouting
             setTimeout(() => {
                 printWindow.print();
+                
+                selectedInvoiceIds.clear();
+                updateSelectionDisplay();
+                document.querySelectorAll('.invoice-select-checkbox').forEach(cb => cb.checked = false);
+                
+                const selectAllBtn = document.getElementById('selectAllBtn');
+                if (selectAllBtn) {
+                    selectAllBtn.textContent = 'ជ្រើសរើសទាំងអស់';
+                    selectAllBtn.classList.add('bg-gray-300', 'text-gray-800');
+                    selectAllBtn.classList.remove('bg-yellow-500', 'text-white');
+                }
             }, 500);
         };
 
@@ -2722,6 +2832,12 @@
 
         initAuth();
 
+        document.addEventListener('DOMContentLoaded', () => {
+            if(quickHideTotals) quickHideTotals.checked = receiptSettings.hideTotals || false;
+            if(historyHideTotals) historyHideTotals.checked = receiptSettings.hideTotals || false;
+            if(updateHideTotals) updateHideTotals.checked = receiptSettings.hideTotals || false;
+        });
+
         // Listeners
         if(modalOkBtn) modalOkBtn.addEventListener('click', () => messageModal.style.display = 'none');
         if(confirmYesBtn) confirmYesBtn.addEventListener('click', () => { confirmModal.style.display = 'none'; if(confirmationCallback) confirmationCallback(true); });
@@ -2743,17 +2859,14 @@
             });
         }
         
-        // NEW MODIFIED: Auto-fill customer data
         customerPhoneInput.addEventListener('input', (e) => {
             formatPhoneNumber(e.target);
             const cleaned = cleanPhoneNumber(e.target.value);
             
-            // Check when phone number seems complete (9+ digits without zeros)
             if (cleaned.length >= 9 && cleaned !== lastAutoFilledPhone) {
                 let existingInvoice = null;
                 let latestTime = 0;
                 
-                // Find most recent invoice by this phone
                 for (const inv of historyInvoices) {
                     if (cleanPhoneNumber(inv.customerPhone) === cleaned) {
                         const t = inv.timestamp.toDate().getTime();
@@ -2767,11 +2880,11 @@
                 if (existingInvoice && existingInvoice.customerName) {
                     customerNameInput.value = existingInvoice.customerName || '';
                     customerAddressInput.value = existingInvoice.customerAddress || '';
-                    lastAutoFilledPhone = cleaned; // Mark as filled so we don't spam
+                    lastAutoFilledPhone = cleaned;
                     showMessage(`រកឃើញអតិថិជនចាស់៖ ${existingInvoice.customerName} (ទិន្នន័យត្រូវបានបំពេញដោយស្វ័យប្រវត្តិ)`);
                 }
             } else if (cleaned.length < 9) {
-                lastAutoFilledPhone = ''; // Reset tracker
+                lastAutoFilledPhone = '';
             }
         });
 
@@ -2827,13 +2940,13 @@
         if (storeOptionsNavBtn) storeOptionsNavBtn.addEventListener('click', () => toggleView('storeOptions'));
         if (sellerOptionsNavBtn) sellerOptionsNavBtn.addEventListener('click', () => toggleView('sellerOptions'));
         if (updatePaymentNavBtn) updatePaymentNavBtn.addEventListener('click', () => toggleView('updatePayment'));
-        if (receiptSettingsNavBtn) receiptSettingsNavBtn.addEventListener('click', () => toggleView('receiptSettings')); // NEW
+        if (receiptSettingsNavBtn) receiptSettingsNavBtn.addEventListener('click', () => toggleView('receiptSettings'));
         if (historyNavBtn) historyNavBtn.addEventListener('click', () => toggleView('history'));
 
-        // Save Receipt Settings Logic
         if (saveReceiptSettingsBtn) {
             saveReceiptSettingsBtn.addEventListener('click', () => {
                 receiptSettings = {
+                    hideTotals: rsHideTotals.checked,
                     titleSize: parseInt(rsTitleSize.value), titleBold: rsTitleBold.checked,
                     dateSize: parseInt(rsDateSize.value), dateBold: rsDateBold.checked,
                     infoSize: parseInt(rsInfoSize.value), infoBold: rsInfoBold.checked,
@@ -2841,16 +2954,21 @@
                     rowSize: parseInt(rsRowSize.value), rowBold: rsRowBold.checked,
                     totalSize: parseInt(rsTotalSize.value), totalBold: rsTotalBold.checked,
                     noteSize: parseInt(rsNoteSize.value), noteBold: rsNoteBold.checked,
-                    lineHeight: parseFloat(rsLineHeight.value) || 1.2,
+                    lineHeight: parseFloat(rsLineHeight.value) || 1.5,
+                    footerLineHeight: parseFloat(rsFooterLineHeight.value) || 1.5,
                     marginLeft: parseFloat(rsMarginLeft.value) || 0,
                     marginRight: parseFloat(rsMarginRight.value) || 0
                 };
                 localStorage.setItem('receiptSettings', JSON.stringify(receiptSettings));
+                
+                if(quickHideTotals) quickHideTotals.checked = receiptSettings.hideTotals;
+                if(historyHideTotals) historyHideTotals.checked = receiptSettings.hideTotals;
+                if(updateHideTotals) updateHideTotals.checked = receiptSettings.hideTotals;
+
                 showMessage('ការកំណត់វិក្កយបត្រត្រូវបានរក្សាទុក!');
             });
         }
 
-        // Dashboard Listeners
         if(startDateInput) startDateInput.addEventListener('change', updateDashboard);
         if(endDateInput) endDateInput.addEventListener('change', updateDashboard);
         if(dashboardDeliveryFilter) dashboardDeliveryFilter.addEventListener('change', updateDashboard);
@@ -2868,7 +2986,34 @@
             selectAllBtn.addEventListener('click', selectAllInvoices);
         }
         
-        // NEW: Event Listener for Print Selected Invoices Button
+        if (searchQueryInput) {
+            searchQueryInput.addEventListener('input', () => {
+                currentPage = 1;
+                renderHistoryList();
+            });
+        }
+        
+        if (historySortBySelect) {
+            historySortBySelect.addEventListener('change', () => {
+                currentPage = 1;
+                renderHistoryList();
+            });
+        }
+
+        if (historyStartDateInput) {
+            historyStartDateInput.addEventListener('change', () => {
+                currentPage = 1;
+                renderHistoryList();
+            });
+        }
+
+        if (historyEndDateInput) {
+            historyEndDateInput.addEventListener('change', () => {
+                currentPage = 1;
+                renderHistoryList();
+            });
+        }
+        
         if (printSelectedBtn) {
             printSelectedBtn.addEventListener('click', () => {
                 if (selectedInvoiceIds.size === 0) {
