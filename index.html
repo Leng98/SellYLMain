@@ -659,6 +659,11 @@
                                 <label for="rsHideTotals" class="font-semibold text-gray-800">លាក់តម្លៃសរុបផ្នែកខាងក្រោមជាអចិន្ត្រៃយ៍ (តម្លៃទំនិញ, សេវាដឹក, សរុបទាំងអស់)</label>
                             </div>
 
+                            <div class="border p-3 rounded-md bg-gray-50 sm:col-span-2 flex items-center space-x-2">
+                                <input type="checkbox" id="rsHideItemTotal" class="w-5 h-5 text-indigo-600 border-gray-300 rounded">
+                                <label for="rsHideItemTotal" class="font-semibold text-gray-800">លាក់ជួរឈរ 'សរុប' របស់ទំនិញ (Hide Item Total Column)</label>
+                            </div>
+
                             <div class="border p-3 rounded-md bg-gray-50">
                                 <label class="block font-semibold text-gray-800 mb-2">ចំណងជើងហាង</label>
                                 <div class="flex items-center space-x-2">
@@ -1013,7 +1018,8 @@
             footerLineHeight: 1.5,
             marginLeft: -6,    // Default margins
             marginRight: 4,
-            hideTotals: false // NEW default setting
+            hideTotals: false, // NEW default setting
+            hideItemTotal: false // NEW default setting
         };
         let receiptSettings = JSON.parse(localStorage.getItem('receiptSettings')) || defaultReceiptSettings;
 
@@ -1157,6 +1163,7 @@
         const dashboardPaymentStatusFilter = document.getElementById('dashboardPaymentStatusFilter');
 
         const rsHideTotals = document.getElementById('rsHideTotals'); // Global Setting
+        const rsHideItemTotal = document.getElementById('rsHideItemTotal'); // NEW Global Setting
         const rsTitleSize = document.getElementById('rsTitleSize');
         const rsTitleBold = document.getElementById('rsTitleBold');
         const rsDateSize = document.getElementById('rsDateSize');
@@ -1848,6 +1855,7 @@
                 const invoiceTime = invoice.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 const totalAmount = invoice.items.reduce((sum, item) => sum + item.total, 0) + (invoice.deliveryFee || 0);
                 const isSelected = selectedInvoiceIds.has(invoice.id); 
+                const printCountDisplay = invoice.printCount ? `<span class="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-indigo-100 text-indigo-700">ព្រីន: ${invoice.printCount}</span>` : '';
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'bg-white rounded-lg shadow-sm border border-gray-200 mb-4 overflow-hidden relative group hover:shadow-md transition-all duration-300';
                 
@@ -1874,7 +1882,7 @@
                                     <div class="flex items-center gap-2">
                                         <h3 class="text-lg font-bold text-gray-800">លេខវិក្កយបត្រ: ${invoice.invoiceNumber || 'N/A'}</h3>
                                     </div>
-                                    <p class="text-green-600 font-bold text-lg mt-1">សរុប: $${totalAmount.toFixed(2)} <span class="text-xs text-gray-400 font-normal ml-2">✓</span></p>
+                                    <p class="text-green-600 font-bold text-lg mt-1 flex items-center">សរុប: $${totalAmount.toFixed(2)} <span class="text-xs text-gray-400 font-normal ml-2 mr-1">✓</span> ${printCountDisplay}</p>
                                     
                                     <div class="mt-2 space-y-1 text-sm text-gray-600">
                                         <p><span class="font-semibold w-24 inline-block">អតិថិជន:</span> ${invoice.customerName}</p>
@@ -2050,6 +2058,8 @@
             // Load settings
             const s = receiptSettings;
             const hideTotals = forceHideTotals !== null ? forceHideTotals : s.hideTotals;
+            const hideItemTotal = s.hideItemTotal || false;
+            const footerColSpan = hideItemTotal ? 1 : 2;
             const lineHeightStr = s.lineHeight || 1.5;
             const footerLineHeightStr = s.footerLineHeight || 1.5;
 
@@ -2076,7 +2086,7 @@
                             <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
                                 <th style="text-align: left; padding-bottom: 4px;">ឈ្មោះទំនិញ</th>
                                 <th style="text-align: right; padding-bottom: 4px;">ចំនួន</th>
-                                <th style="text-align: right; padding-bottom: 4px;">សរុប</th>
+                                ${!hideItemTotal ? `<th style="text-align: right; padding-bottom: 4px;">សរុប</th>` : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -2090,7 +2100,7 @@
                         </div>
                     </td>
                     <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">${item.quantity}</td>
-                    <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$${item.total.toFixed(2)}</td>
+                    ${!hideItemTotal ? `<td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$${item.total.toFixed(2)}</td>` : ''}
                 </tr>`;
             });
             html += `
@@ -2099,15 +2109,15 @@
             if (!hideTotals) {
                 html += `
                         <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$${salesTotal.toFixed(2)}</td></tr>
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td></tr>
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$${salesTotal.toFixed(2)}</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
                         </tfoot>
                 `;
             } else {
                 html += `
                         <tfoot style="border-top: 1px dashed #000;">
-                            <tr><td colspan="3" style="padding-top: 2px;"></td></tr>
+                            <tr><td colspan="${footerColSpan + 1}" style="padding-top: 2px;"></td></tr>
                         </tfoot>
                 `;
             }
@@ -2143,6 +2153,7 @@
             else if (viewToShow === 'receiptSettings') { 
                 receiptSettingsView.style.display = 'block'; 
                 rsHideTotals.checked = receiptSettings.hideTotals || false;
+                rsHideItemTotal.checked = receiptSettings.hideItemTotal || false;
                 rsTitleSize.value = receiptSettings.titleSize;
                 rsTitleBold.checked = receiptSettings.titleBold;
                 rsDateSize.value = receiptSettings.dateSize;
@@ -2186,10 +2197,12 @@
                 noteSize: parseInt(rsNoteSize.value) || 14, noteBold: rsNoteBold.checked,
                 lineHeight: parseFloat(rsLineHeight.value) || 1.5,
                 footerLineHeight: parseFloat(rsFooterLineHeight.value) || 1.5,
-                hideTotals: rsHideTotals.checked 
+                hideTotals: rsHideTotals.checked,
+                hideItemTotal: rsHideItemTotal.checked
             };
             const lineHeightStr = s.lineHeight || 1.5;
             const footerLineHeightStr = s.footerLineHeight || 1.5;
+            const footerColSpan = s.hideItemTotal ? 1 : 2;
 
             const day = new Date().getDate();
             const month = new Date().getMonth() + 1;
@@ -2219,7 +2232,7 @@
                             <tr style="font-size: ${s.headerSize}px; font-weight: ${s.headerBold ? 'bold' : 'normal'};">
                                 <th style="text-align: left; padding-bottom: 4px;">ឈ្មោះទំនិញ</th>
                                 <th style="text-align: right; padding-bottom: 4px;">ចំនួន</th>
-                                <th style="text-align: right; padding-bottom: 4px;">សរុប</th>
+                                ${!s.hideItemTotal ? `<th style="text-align: right; padding-bottom: 4px;">សរុប</th>` : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -2231,7 +2244,7 @@
                                     </div>
                                 </td>
                                 <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">1</td>
-                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$15.00</td>
+                                ${!s.hideItemTotal ? `<td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$15.00</td>` : ''}
                             </tr>
                             <tr>
                                 <td style="padding: 4px 0; vertical-align: top;">
@@ -2241,22 +2254,22 @@
                                     </div>
                                 </td>
                                 <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">2</td>
-                                <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$20.00</td>
+                                ${!s.hideItemTotal ? `<td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$20.00</td>` : ''}
                             </tr>
                         </tbody>`;
             
             if (!s.hideTotals) {
                 html += `
                         <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$35.00</td></tr>
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$1.50</td></tr>
-                            <tr><td colspan="2" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$35.00</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$1.50</td></tr>
+                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
                         </tfoot>
                 `;
             } else {
                 html += `
                         <tfoot style="border-top: 1px dashed #000;">
-                            <tr><td colspan="3" style="padding-top: 2px;"></td></tr>
+                            <tr><td colspan="${footerColSpan + 1}" style="padding-top: 2px;"></td></tr>
                         </tfoot>
                 `;
             }
@@ -2270,7 +2283,7 @@
             document.getElementById('receiptDemoContainer').innerHTML = html;
         };
 
-        [rsHideTotals, rsTitleSize, rsTitleBold, rsDateSize, rsDateBold, rsInfoSize, rsInfoBold, rsHeaderSize, rsHeaderBold, rsRowSize, rsRowBold, rsTotalSize, rsTotalBold, rsNoteSize, rsNoteBold, rsLineHeight, rsFooterLineHeight, rsMarginLeft, rsMarginRight].forEach(el => {
+        [rsHideItemTotal, rsHideTotals, rsTitleSize, rsTitleBold, rsDateSize, rsDateBold, rsInfoSize, rsInfoBold, rsHeaderSize, rsHeaderBold, rsRowSize, rsRowBold, rsTotalSize, rsTotalBold, rsNoteSize, rsNoteBold, rsLineHeight, rsFooterLineHeight, rsMarginLeft, rsMarginRight].forEach(el => {
             if(el) {
                 el.addEventListener('input', renderReceiptDemo);
                 el.addEventListener('change', renderReceiptDemo);
@@ -2505,6 +2518,7 @@
                 const invoiceData = {
                     customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote,
                     items: currentInvoiceItems, timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: shouldPrint ? new Date() : null,
+                    printCount: shouldPrint ? 1 : 0
                 };
                 await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                 if (shouldPrint) {
@@ -2587,6 +2601,7 @@
                         paymentOption: getPaymentOptions(), paymentNotes: paymentNotesInput.value.trim(), 
                         deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote,
                         items: [...currentInvoiceItems], timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: null,
+                        printCount: 0
                     };
                     
                     await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
@@ -2628,7 +2643,17 @@
             const docId = event.currentTarget.dataset.docId;
             const invoice = historyInvoices.find(inv => inv.id === docId);
             const hideTotals = document.getElementById('historyHideTotals').checked;
-            if (invoice) printInvoice(invoice, invoice.invoiceNumber, hideTotals);
+            if (invoice) {
+                printInvoice(invoice, invoice.invoiceNumber, hideTotals);
+                try {
+                    const newCount = (invoice.printCount || 0) + 1;
+                    await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId), {
+                        printCount: newCount
+                    });
+                } catch (e) {
+                    console.error("Error updating print count:", e);
+                }
+            }
         };
 
         const printInvoice = (invoiceData, invoiceNumber, forceHideTotals = null) => {
@@ -2673,9 +2698,26 @@
             printWindow.document.close();
             printWindow.focus();
             
-            setTimeout(() => {
+            // Timeout allows the browser rendering to finish layouting
+            setTimeout(async () => {
                 printWindow.print();
                 
+                // Add print count to database for all selected invoices
+                for (const id of invoiceIdsSet) {
+                    const inv = historyInvoices.find(i => i.id === id);
+                    if (inv) {
+                        try {
+                            const newCount = (inv.printCount || 0) + 1;
+                            await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, id), {
+                                printCount: newCount
+                            });
+                        } catch (e) {
+                            console.error("Error updating print count:", e);
+                        }
+                    }
+                }
+                
+                // Clear checkboxes after print dialog opens
                 selectedInvoiceIds.clear();
                 updateSelectionDisplay();
                 document.querySelectorAll('.invoice-select-checkbox').forEach(cb => cb.checked = false);
@@ -2947,6 +2989,7 @@
             saveReceiptSettingsBtn.addEventListener('click', () => {
                 receiptSettings = {
                     hideTotals: rsHideTotals.checked,
+                    hideItemTotal: rsHideItemTotal.checked,
                     titleSize: parseInt(rsTitleSize.value), titleBold: rsTitleBold.checked,
                     dateSize: parseInt(rsDateSize.value), dateBold: rsDateBold.checked,
                     infoSize: parseInt(rsInfoSize.value), infoBold: rsInfoBold.checked,
