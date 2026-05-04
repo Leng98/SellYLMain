@@ -8,109 +8,54 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Add html2canvas for image generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Add QR Code Generator (QRious) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <!-- Add HTML5 QR Code Scanner -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
         /* Hide main content when printing, only show invoice section */
-        .invoice-print-section {
-            display: none;
-        }
+        .invoice-print-section { display: none; }
         @media print {
-            body > *:not(.invoice-print-section) {
-                display: none;
-            }
+            body > *:not(.invoice-print-section) { display: none; }
             /* Styling for 80mm thermal receipt printer */
             .invoice-print-section {
-                display: block;
-                font-family: sans-serif;
-                color: #000;
-                width: 80mm;
-                padding: 5mm;
-                margin-left: -6mm;
-                margin-right: 4mm;
-                box-sizing: border-box;
-                font-size: 14px;
-                line-height: 1.2;
+                display: block; font-family: sans-serif; color: #000;
+                width: 80mm; padding: 5mm; margin-left: -6mm; margin-right: 4mm;
+                box-sizing: border-box; font-size: 14px; line-height: 1.2;
             }
-            /* Hide modal when printing from browser menu */
             .modal { display: none !important; }
         }
-        /* Custom modal for alerts and confirmations */
         .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background-color: #ffffff;
-            padding: 24px;
-            border-radius: 8px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-height: 90vh;
-            overflow-y: auto;
+            background-color: #ffffff; padding: 24px; border-radius: 8px;
+            text-align: center; max-width: 400px; width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); max-height: 90vh; overflow-y: auto;
         }
-        #editModal .modal-content, #messageModal .modal-content {
-            max-width: 550px;
-            text-align: left;
-        }
-        #messageModal .modal-content {
-            text-align: center;
-        }
-        #modalRichContent {
-            text-align: left;
-        }
-        /* Preview Modal Styles */
-        #previewModal .modal-content {
-            width: auto;
-            max-width: 450px;
-            padding: 20px;
-            background-color: #fff;
-        }
-        #invoicePreviewContent {
-            border: 1px solid #ddd;
-            background-color: #fff;
-            margin: 10px;
-            display: flex;
-            justify-content: center;
-        }
-        .modal-buttons {
-            margin-top: 16px;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-        }
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
+        #editModal .modal-content, #messageModal .modal-content { max-width: 550px; text-align: left; }
+        #messageModal .modal-content { text-align: center; }
+        #modalRichContent { text-align: left; }
+        #previewModal .modal-content { width: auto; max-width: 450px; padding: 20px; background-color: #fff; }
+        #invoicePreviewContent { border: 1px solid #ddd; background-color: #fff; margin: 10px; display: flex; justify-content: center; }
+        .modal-buttons { margin-top: 16px; margin-bottom: 16px; display: flex; justify-content: center; gap: 16px; }
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         .loading-spinner {
-            width: 64px;
-            height: 64px;
-            border: 4px solid rgba(139, 92, 246, 0.2);
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            width: 64px; height: 64px; border: 4px solid rgba(139, 92, 246, 0.2);
+            border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Custom Scrollbar for Sidebar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        
         /* Dark mode styles */
         body.dark-mode { background-color: #1a202c; color: #e2e8f0; }
         body.dark-mode .bg-white { background-color: #2d3748; }
@@ -118,7 +63,6 @@
         body.dark-mode .bg-gray-50 { background-color: #2d3748; }
         body.dark-mode .bg-gray-200 { background-color: #4a5568; }
         body.dark-mode .text-gray-900, body.dark-mode .text-gray-700, body.dark-mode .text-gray-500, body.dark-mode .text-gray-800 { color: #e2e8f0; }
-        body.dark-mode .bg-white.hover\:bg-gray-100:hover { background-color: #4a5568; }
         body.dark-mode .hover\:bg-gray-100:hover { background-color: #4a5568; }
         body.dark-mode .bg-indigo-50 { background-color: #2a384a; }
         body.dark-mode .bg-green-50 { background-color: #1f3b33; }
@@ -127,7 +71,6 @@
         body.dark-mode .bg-green-100 { background-color: #1e3a2f; color: #e2e8f0; }
         body.dark-mode .text-indigo-700, body.dark-mode .text-indigo-800, body.dark-mode .text-green-700, body.dark-mode .text-green-800, body.dark-mode .text-yellow-700, body.dark-mode .text-yellow-800, body.dark-mode .text-blue-700, body.dark-mode .text-blue-800 { color: #e2e8f0; }
         body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #4a5568; color: #e2e8f0; }
-        body.dark-mode input::placeholder, body.dark-mode select::placeholder, body.dark-mode textarea::placeholder { color: #a0aec0; }
         body.dark-mode .modal-content { background-color: #2d3748; }
         body.dark-mode table tbody tr:hover { background-color: #4a5568; }
     </style>
@@ -137,7 +80,7 @@
     <!-- Modal for messages -->
     <div id="messageModal" class="modal">
         <div class="modal-content">
-            <p id="modalMessage" class="text-lg font-semibold text-gray-800"></p>
+            <p id="modalMessage" class="text-lg font-semibold text-gray-800 whitespace-pre-wrap"></p>
             <div id="modalRichContent" class="mt-4 text-left text-sm text-gray-700 space-y-1"></div>
             <div class="modal-buttons">
                 <button id="modalOkBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300">យល់ព្រម</button>
@@ -150,7 +93,6 @@
         <div class="modal-content">
             <h2 class="text-lg font-bold text-gray-700 m-4">មើលវិក្កយបត្រមុនបោះពុម្ព</h2>
             <div id="invoicePreviewContent" class="border border-gray-300 p-2 bg-white text-left text-sm shadow-inner" style="min-height: 200px;">
-                <!-- Invoice HTML will be injected here -->
             </div>
             <div class="modal-buttons">
                 <button id="previewCopyBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">ចម្លងរូបភាព</button>
@@ -163,7 +105,7 @@
     <!-- Modal for confirmations -->
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <p id="confirmMessage" class="text-lg font-semibold text-gray-800"></p>
+            <p id="confirmMessage" class="text-lg font-semibold text-gray-800 whitespace-pre-wrap"></p>
             <div class="modal-buttons">
                 <button id="confirmYesBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">បាទ/ចាស</button>
                 <button id="confirmNoBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300">ទេ</button>
@@ -177,10 +119,15 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">កែប្រែព័ត៌មានអតិថិជន</h2>
             <input type="hidden" id="editDocId">
             <div class="space-y-3">
-                <div>
-                    <label for="editSellerName" class="block text-sm font-medium text-gray-700">អ្នកលក់</label>
-                    <select id="editSellerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                    </select>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label for="editSellerName" class="block text-sm font-medium text-gray-700">អ្នកលក់</label>
+                        <select id="editSellerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    </div>
+                    <div>
+                        <label for="editCommissionQty" class="block text-sm font-medium text-gray-700">ចំនួនគិតកម្រៃ</label>
+                        <input type="number" id="editCommissionQty" placeholder="ស្វ័យប្រវត្តិ" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
                 </div>
                 <div>
                     <label for="editCustomerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអតិថិជន</label>
@@ -196,8 +143,7 @@
                 </div>
                 <div class="pt-2">
                     <label for="editStoreName" class="block text-sm font-medium text-gray-700">ហាង</label>
-                    <select id="editStoreName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                    </select>
+                    <select id="editStoreName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
                 </div>
                 <div class="pt-2">
                     <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700">ជម្រើសសម្រាប់ការដឹកជញ្ជូន</label>
@@ -208,9 +154,18 @@
                         <option value="មិនបានជ្រើសរើស">មិនបានជ្រើសរើស</option>
                     </select>
                 </div>
-                <div class="pt-2">
-                    <label for="editDeliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក (ដុល្លារ)</label>
-                    <input type="number" id="editDeliveryFee" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                <div class="pt-2 grid grid-cols-2 gap-2">
+                    <div>
+                        <label for="editDeliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក ($)</label>
+                        <input type="number" id="editDeliveryFee" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="editPackageSize" class="block text-sm font-medium text-gray-700">ប្រភេទវេចខ្ចប់</label>
+                        <select id="editPackageSize" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="normal">កញ្ចប់ធម្មតា (៤៥០០៛)</option>
+                            <option value="box">ជាកេស (១០០០០៛)</option>
+                        </select>
+                    </div>
                 </div>
                  <div class="pt-2">
                     <label for="editGeneralNote" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់ (Note ចុងវិក្កយបត្រ)</label>
@@ -252,65 +207,128 @@
     </div>
 
     <!-- Main Application Container -->
-    <div id="mainApp" class="flex w-full flex-col hidden">
-        <!-- Top Navigation Bar -->
-        <nav class="bg-indigo-700 text-white p-4 flex items-center justify-between flex-wrap">
-            <div class="flex items-center gap-4 mb-2 sm:mb-0">
-                <div class="flex items-center space-x-1 overflow-x-auto pb-1 sm:space-x-2">
-                    <button id="dashboardNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-white bg-indigo-900 hover:bg-indigo-800 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-                        <span class="whitespace-nowrap">ផ្ទាំងគ្រប់គ្រង</span>
-                    </button>
-                    <button id="customerInfoNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm-1.5 6a4.5 4.5 0 00-4.5 4.5V18h9v-1.5A4.5 4.5 0 0011.5 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
-                        <span class="whitespace-nowrap">ព័ត៌មានអតិថិជន</span>
-                    </button>
-                    <button id="addItemNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="whitespace-nowrap">បន្ថែមទំនិញ</span>
-                    </button>
-                    <button id="storeOptionsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
-                           <path fill-rule="evenodd" d="M10.496 2.132a1 1 0 00-.992 0l-7 4A1 1 0 003 8v7a1 1 0 100 2h14a1 1 0 100-2V8a1 1 0 00.504-1.868l-7-4zM6 9a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zm3 1a1 1 0 012 0v3a1 1 0 11-2 0v-3zm5-1a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="whitespace-nowrap">ជម្រើសហាង</span>
-                    </button>
-                    <button id="sellerOptionsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="whitespace-nowrap">ជម្រើសអ្នកលក់</span>
-                    </button>
-                    <button id="updatePaymentNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                          <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="whitespace-nowrap">កែប្រែការទូទាត់</span>
-                    </button>
-                    <button id="receiptSettingsNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="whitespace-nowrap">កំណត់វិក្កយបត្រ</span>
-                    </button>
-
-                    <button id="historyNavBtn" class="px-3 py-1.5 text-sm rounded-md font-medium text-indigo-100 hover:bg-indigo-600 transition duration-300 flex items-center gap-1.5 sm:px-4 sm:py-2 sm:text-base sm:gap-2">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2.75 9a.75.75 0 000 1.5h14.5a.75.75 0 000-1.5H2.75z" fill-rule="evenodd" clip-rule="evenodd" /></svg>
-                        <span class="whitespace-nowrap">មើលប្រវត្តិទិន្នន័យ</span>
-                    </button>
+    <div id="mainApp" class="w-full h-screen flex hidden bg-gray-50 overflow-hidden">
+        <!-- Mobile Header -->
+        <div class="md:hidden fixed top-0 left-0 w-full bg-indigo-700 text-white p-4 flex items-center justify-between shadow-md z-20">
+            <div class="flex items-center gap-2">
+                <div class="bg-white p-1.5 rounded-lg shadow-sm">
+                    <svg class="w-5 h-5 text-indigo-700" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm-1.5 6a4.5 4.5 0 00-4.5 4.5V18h9v-1.5A4.5 4.5 0 0011.5 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
                 </div>
+                <h1 class="text-lg font-bold tracking-wider">YL Admin</h1>
             </div>
-            <button id="themeToggleBtn" class="p-2 rounded-md hover:bg-indigo-600 transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" id="lightIcon" class="h-6 w-6 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" id="darkIcon" class="h-6 w-6 text-gray-200 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0015.354 20.354 9.003 9.003 0 0020.354 15.354z" /></svg>
-            </button>
-        </nav>
+            <div class="flex items-center gap-1">
+                <button id="mobileThemeToggleBtn" class="p-2 rounded-lg hover:bg-indigo-600 transition duration-300">
+                    <svg id="mobileLightIcon" class="h-5 w-5 text-indigo-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="mobileDarkIcon" class="h-5 w-5 text-indigo-100 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0015.354 20.354 9.003 9.003 0 0020.354 15.354z" /></svg>
+                </button>
+                <button id="mobileMenuBtn" class="p-2 rounded-lg hover:bg-indigo-600 transition duration-300 focus:outline-none">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Backdrop (Mobile) -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-gray-900 bg-opacity-60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+        <!-- Sidebar Menu -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-indigo-800 text-white flex flex-col z-40 transform -translate-x-full transition-all duration-300 ease-in-out md:relative md:translate-x-0 shadow-2xl">
+            <!-- Branding -->
+            <div class="p-6 flex items-center justify-between border-b border-indigo-700/50">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-2 rounded-xl shadow-sm">
+                        <svg class="w-6 h-6 text-indigo-700" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm-1.5 6a4.5 4.5 0 00-4.5 4.5V18h9v-1.5A4.5 4.5 0 0011.5 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wider">YL Admin</h2>
+                        <p class="text-indigo-300 text-[10px] uppercase font-semibold tracking-widest mt-0.5">គ្រប់គ្រងការលក់</p>
+                    </div>
+                </div>
+                <button id="closeSidebarBtn" class="md:hidden p-2 text-indigo-300 hover:text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+                <button id="dashboardNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg class="w-5 h-5 opacity-80" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                    <span>ផ្ទាំងគ្រប់គ្រង</span>
+                </button>
+                <button id="scanPackageNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                        <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                        <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                        <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                        <rect x="7" y="7" width="10" height="10" rx="1" ry="1"></rect>
+                    </svg>
+                    <span>ស្កែនអីវ៉ាន់ចេញ</span>
+                </button>
+                <button id="customerInfoNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg class="w-5 h-5 opacity-80" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm-1.5 6a4.5 4.5 0 00-4.5 4.5V18h9v-1.5A4.5 4.5 0 0011.5 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
+                    <span>ព័ត៌មានអតិថិជន</span>
+                </button>
+                <button id="addItemNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>បន្ថែមទំនិញ</span>
+                </button>
+                <button id="storeOptionsNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                       <path fill-rule="evenodd" d="M10.496 2.132a1 1 0 00-.992 0l-7 4A1 1 0 003 8v7a1 1 0 100 2h14a1 1 0 100-2V8a1 1 0 00.504-1.868l-7-4zM6 9a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zm3 1a1 1 0 012 0v3a1 1 0 11-2 0v-3zm5-1a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>ជម្រើសហាង</span>
+                </button>
+                <button id="sellerOptionsNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    <span>ជម្រើសអ្នកលក់</span>
+                </button>
+                <button id="updatePaymentNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                      <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                    </svg>
+                    <span>កែប្រែការទូទាត់</span>
+                </button>
+                <button id="receiptSettingsNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                    </svg>
+                    <span>កំណត់វិក្កយបត្រ</span>
+                </button>
+                <button id="historyNavBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50 hover:text-white mb-1">
+                    <svg class="w-5 h-5 opacity-80" fill="currentColor" viewBox="0 0 20 20"><path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2.75 9a.75.75 0 000 1.5h14.5a.75.75 0 000-1.5H2.75z" fill-rule="evenodd" clip-rule="evenodd" /></svg>
+                    <span>មើលប្រវត្តិទិន្នន័យ</span>
+                </button>
+            </nav>
+
+            <!-- Theme Toggle (Desktop) -->
+            <div class="p-6 border-t border-indigo-700/50 hidden md:block">
+                <button id="themeToggleBtn" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl hover:bg-indigo-700/50 transition duration-300 text-sm font-medium text-indigo-100 focus:outline-none">
+                    <svg id="lightIcon" class="h-5 w-5 text-indigo-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="darkIcon" class="h-5 w-5 text-indigo-100 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0015.354 20.354 9.003 9.003 0 0020.354 15.354z" /></svg>
+                    <span>ប្តូរពណ៌ផ្ទៃ</span>
+                </button>
+            </div>
+        </aside>
         
-        <!-- Content Area -->
-        <div id="contentArea" class="p-4 flex-grow">
+        <!-- Content Area Wrapper -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative pt-16 md:pt-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            
+            <!-- Desktop Header inside Main -->
+            <header class="hidden md:flex items-center justify-between bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 shrink-0 transition-colors duration-300 shadow-sm">
+                <button id="desktopMenuBtn" class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 focus:outline-none transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="flex items-center">
+                    <!-- Additional top-right actions can go here -->
+                </div>
+            </header>
+
+            <div id="contentArea" class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
             
             <!-- Dashboard View -->
             <div id="dashboardView" class="hidden max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 space-y-8 mb-6">
@@ -395,7 +413,6 @@
                              <label for="dashboardSellerFilter" class="block text-sm font-medium text-gray-700">តម្រងឈ្មោះអ្នកលក់</label>
                              <select id="dashboardSellerFilter" class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm p-2 border p-1">
                                 <option value="All">ទាំងអស់</option>
-                                <!-- Populated dynamically -->
                              </select>
                         </div>
 
@@ -411,15 +428,101 @@
                                     </tr>
                                 </thead>
                                 <tbody id="sellerPerformanceList" class="bg-white divide-y divide-gray-200">
-                                    <!-- Dynamic Rows -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
             </div>
 
+            <!-- NEW: Scan Package View -->
+            <div id="scanPackageView" class="hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            ស្កែនអីវ៉ាន់ចេញ (QR Code)
+                        </h2>
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <div class="flex-1 md:flex-none">
+                                <label for="scanDateFilter" class="sr-only">ថ្ងៃទីឆែក</label>
+                                <input type="date" id="scanDateFilter" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            </div>
+                            <button id="toggleScannerBtn" class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap">
+                                បើកកាមេរ៉ា
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Scanner Container -->
+                    <div id="scannerContainerWrapper" class="hidden flex justify-center bg-gray-50 rounded-xl overflow-hidden border border-gray-200 mb-6 relative">
+                        <div id="qr-reader" style="width: 100%; max-width: 500px;"></div>
+                    </div>
+                    
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-center shadow-sm">
+                            <p class="text-sm text-blue-600 font-semibold">សរុបទាំងអស់</p>
+                            <p id="scanTotalCount" class="text-3xl font-bold text-blue-800 mt-1">0</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 text-center shadow-sm">
+                            <p class="text-sm text-green-600 font-semibold">ភ្នំពេញ</p>
+                            <p id="scanPPCount" class="text-3xl font-bold text-green-800 mt-1">0</p>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg border border-orange-100 text-center shadow-sm cursor-pointer hover:bg-orange-100 transition" id="provCardBtn" title="ចុចដើម្បីមើលលម្អិត">
+                            <p class="text-sm text-orange-600 font-semibold flex items-center justify-center gap-1">តាមខេត្ត <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></p>
+                            <p id="scanProvCount" class="text-3xl font-bold text-orange-800 mt-1">0</p>
+                            <div id="provBreakdown" class="hidden mt-3 text-sm text-orange-800 bg-white p-2 rounded border border-orange-200 text-left">
+                                <div class="flex justify-between border-b border-orange-100 pb-1 mb-1"><span>VET:</span> <span id="scanVetCount" class="font-bold">0</span></div>
+                                <div class="flex justify-between"><span>J&T:</span> <span id="scanJtCount" class="font-bold">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Cost Card -->
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-center shadow-sm mb-6">
+                        <p class="text-sm text-red-600 font-semibold">ថ្លៃសេវាចេញអីវ៉ាន់តាមខេត្តសរុប (កញ្ចប់: ៤៥០០៛, កេស: ១០០០០៛)</p>
+                        <p id="scanTotalCost" class="text-3xl font-bold text-red-800 mt-1">0 ៛</p>
+                    </div>
+
+                    <!-- Results Lists -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-100 pt-6">
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h3 class="text-lg font-bold text-green-700 mb-4 border-b border-green-200 pb-2">បញ្ជីភ្នំពេញ</h3>
+                            <div id="scanPPList" class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                <p class="text-center text-gray-400 text-sm italic py-4">គ្មានទិន្នន័យ...</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h3 class="text-lg font-bold text-orange-700 mb-4 border-b border-orange-200 pb-2">បញ្ជីតាមខេត្ត</h3>
+                            <div id="scanProvList" class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                <p class="text-center text-gray-400 text-sm italic py-4">គ្មានទិន្នន័យ...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Customer Info View -->
              <div id="customerInfoView" class="hidden max-w-4xl mx-auto space-y-8">
+                    
+                    <!-- NEW: Telegram Auto-fill box -->
+                    <div class="bg-indigo-50 rounded-xl p-6 shadow-md border border-indigo-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-bl-full opacity-50 pointer-events-none"></div>
+                        <h2 class="text-lg font-bold text-indigo-900 flex items-center gap-2 mb-3 relative z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            បញ្ជូលទិន្នន័យរហ័សពី Telegram (Auto-Fill)
+                        </h2>
+                        <div class="relative z-10">
+                            <textarea id="pasteOrderText" rows="6" placeholder="ចម្លង (Copy) អត្ថបទពី Telegram ហើយបិទភ្ជាប់ (Paste) ទីនេះ...&#10;ឧទាហរណ៍៖&#10;មានបោះដុំប្រ៊េន CCR & JELY&#10;______________________________&#10;LENG LENG&#10;______________________________&#10;0123456789&#10;..." class="w-full rounded-md border-indigo-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm custom-scrollbar bg-white/90"></textarea>
+                            <div class="flex justify-end mt-3">
+                                <button id="parseOrderBtn" class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md hover:shadow-lg transform active:scale-95 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    ទាញយកទិន្នន័យចូលប្រអប់
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-lg p-6 shadow-md space-y-4">
                         <h2 class="text-xl font-semibold text-gray-700">ព័ត៌មានអតិថិជន</h2>
                         
@@ -469,7 +572,13 @@
                         </div>
 
                         <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-4 mb-4">
-                            <h3 class="text-sm font-medium text-blue-700">ជ្រើសរើសអ្នកលក់</h3>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-medium text-blue-700">ជ្រើសរើសអ្នកលក់</h3>
+                                <div class="flex items-center gap-2">
+                                    <label for="commissionQty" class="text-xs text-blue-700 font-semibold">ចំនួនគិតកម្រៃ:</label>
+                                    <input type="number" id="commissionQty" placeholder="ស្វ័យប្រវត្តិ" class="w-24 rounded-md border-gray-300 shadow-sm p-1 text-sm border focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
                             <div id="sellerCheckboxContainer" class="mt-2 flex flex-wrap items-center gap-4">
                                 <p class="text-sm text-gray-400 italic">សូមបន្ថែមអ្នកលក់ក្នុងម៉ឺនុយ "ជម្រើសអ្នកលក់"</p>
                             </div>
@@ -493,11 +602,23 @@
                             </div>
                         </div>
                         
-                        <div class="mt-4">
-                            <h3 class="text-sm font-medium text-gray-700">សេវាដឹក</h3>
-                            <div class="mt-2">
-                                <label for="deliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក (ដុល្លារ)</label>
-                                <input type="number" id="deliveryFee" placeholder="0.00" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700">សេវាដឹក</h3>
+                                <div class="mt-2">
+                                    <label for="deliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹកពីអ្នកលក់ ($)</label>
+                                    <input type="number" id="deliveryFee" placeholder="0.00" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700">ប្រភេទការវេចខ្ចប់ (គិតលុយចេញខេត្ត)</h3>
+                                <div class="mt-2">
+                                    <label for="packageSizeSelect" class="block text-sm font-medium text-gray-700">កញ្ចប់ ឬ កេស</label>
+                                    <select id="packageSizeSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                                        <option value="normal">កញ្ចប់ធម្មតា (៤៥០០៛)</option>
+                                        <option value="box">ជាកេស (១០០០០៛)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -934,9 +1055,15 @@
                                 <button id="printSelectedBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm flex items-center gap-2 hidden">
                                     បោះពុម្ពដែលបានជ្រើសរើស
                                 </button>
-                                <div class="flex items-center bg-yellow-50 px-3 py-2 rounded-md border border-yellow-200">
-                                    <input type="checkbox" id="historyHideTotals" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
-                                    <label for="historyHideTotals" class="ml-2 text-sm font-semibold text-gray-800 cursor-pointer">លាក់តម្លៃសរុប</label>
+                                <div class="flex items-center bg-yellow-50 px-3 py-2 rounded-md border border-yellow-200 gap-4">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="historyHideTotals" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                        <label for="historyHideTotals" class="ml-2 text-sm font-semibold text-gray-800 cursor-pointer">លាក់តម្លៃសរុប</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="historyHideItemTotalColumn" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                        <label for="historyHideItemTotalColumn" class="ml-2 text-sm font-semibold text-gray-800 cursor-pointer">លាក់ជួរឈរសរុប (Item Total)</label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
@@ -962,7 +1089,8 @@
                     </div>
                 </div>
 
-        </div>
+            </div>
+        </main>
     </div>
 
     <!-- Offscreen container for image generation -->
@@ -1007,6 +1135,7 @@
         let currentInvoiceItems = [];
         let isAuthReady = false;
         let lastAutoFilledPhone = ''; // Added to track auto-filled phone
+        let html5QrCode = null; // Scanner instance
         
         let itemsPerPage = 10; 
         let currentPage = 1;
@@ -1031,6 +1160,7 @@
 
         const mainApp = document.getElementById('mainApp');
         const loadingView = document.getElementById('loadingView');
+        const sidebar = document.getElementById('sidebar');
         
         let app = null;
         
@@ -1056,6 +1186,8 @@
         const editCustomerAddressInput = document.getElementById('editCustomerAddress');
         const editDeliveryOptionSelect = document.getElementById('editDeliveryOption');
         const editDeliveryFeeInput = document.getElementById('editDeliveryFee');
+        const editPackageSize = document.getElementById('editPackageSize'); // NEW
+        const editCommissionQty = document.getElementById('editCommissionQty'); // NEW
         const editSaveBtn = document.getElementById('editSaveBtn');
         const editCancelBtn = document.getElementById('editCancelBtn');
         const editStoreNameSelect = document.getElementById('editStoreName');
@@ -1087,7 +1219,22 @@
         const sellerOptionsView = document.getElementById('sellerOptionsView'); 
         const historyView = document.getElementById('historyView');
         const receiptSettingsView = document.getElementById('receiptSettingsView'); 
+        const scanPackageView = document.getElementById('scanPackageView');
         
+        const scanDateFilter = document.getElementById('scanDateFilter');
+        const toggleScannerBtn = document.getElementById('toggleScannerBtn');
+        const scannerContainerWrapper = document.getElementById('scannerContainerWrapper');
+        const scanTotalCount = document.getElementById('scanTotalCount');
+        const scanPPCount = document.getElementById('scanPPCount');
+        const scanProvCount = document.getElementById('scanProvCount');
+        const scanPPList = document.getElementById('scanPPList');
+        const scanProvList = document.getElementById('scanProvList');
+        const scanVetCount = document.getElementById('scanVetCount');
+        const scanJtCount = document.getElementById('scanJtCount');
+        const scanTotalCost = document.getElementById('scanTotalCost');
+        const provCardBtn = document.getElementById('provCardBtn');
+        const provBreakdown = document.getElementById('provBreakdown');
+
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const historyStartDateInput = document.getElementById('historyStartDate');
@@ -1107,6 +1254,7 @@
         const otherPaymentMethodContainer = document.getElementById('otherPaymentMethodContainer');
         const paymentNotesInput = document.getElementById('paymentNotes');
         const deliveryFeeInput = document.getElementById('deliveryFee');
+        const packageSizeSelect = document.getElementById('packageSizeSelect'); // NEW
         
         const enableGeneralNoteCheckbox = document.getElementById('enableGeneralNote');
         const generalNoteInputContainer = document.getElementById('generalNoteInputContainer');
@@ -1157,6 +1305,9 @@
         const updatePaymentNavBtn = document.getElementById('updatePaymentNavBtn'); 
         const receiptSettingsNavBtn = document.getElementById('receiptSettingsNavBtn'); 
         const historyNavBtn = document.getElementById('historyNavBtn');
+        const scanPackageNavBtn = document.getElementById('scanPackageNavBtn');
+        
+        const desktopMenuBtn = document.getElementById('desktopMenuBtn'); // Desktop toggle button
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const lightIcon = document.getElementById('lightIcon');
         const darkIcon = document.getElementById('darkIcon');
@@ -1171,6 +1322,7 @@
 
         const rsHideTotals = document.getElementById('rsHideTotals'); // Global Setting
         const rsHideItemTotal = document.getElementById('rsHideItemTotal'); // NEW Global Setting
+        const historyHideItemTotalColumn = document.getElementById('historyHideItemTotalColumn'); // NEW History Setting
         const rsTitleSize = document.getElementById('rsTitleSize');
         const rsTitleBold = document.getElementById('rsTitleBold');
         const rsDateSize = document.getElementById('rsDateSize');
@@ -1454,7 +1606,9 @@
             jtRadio.checked = false;
             phnompenhRadio.checked = false;
             if (storeSelect) storeSelect.value = 'វិក្កយបត្រ';
+            if (packageSizeSelect) packageSizeSelect.value = 'normal'; // Reset package size
             document.querySelectorAll('.seller-select-checkbox').forEach(cb => cb.checked = false); 
+            if (document.getElementById('commissionQty')) document.getElementById('commissionQty').value = '';
             
             if (paymentSelect) paymentSelect.value = 'មិនទាន់វេទឹកប្រាក់';
             if (otherPaymentMethodContainer) otherPaymentMethodContainer.classList.add('hidden');
@@ -1465,11 +1619,204 @@
             itemQuantityInput.value = '1';
             itemPriceInput.value = '';
             
+            const pasteOrderText = document.getElementById('pasteOrderText');
+            if(pasteOrderText) pasteOrderText.value = ''; 
+            
             enableGeneralNoteCheckbox.checked = false;
             generalNoteInputContainer.classList.add('hidden');
             generalNoteInput.value = '';
 
             itemNameInput.focus();
+        };
+
+        const parsePastedOrder = () => {
+            const pasteInput = document.getElementById('pasteOrderText');
+            if(!pasteInput) return;
+            
+            const text = pasteInput.value.trim();
+            if (!text) return showMessage('សូម Copy អត្ថបទពី Telegram បញ្ចូលសិនមុននឹងទាញយក!');
+
+            // Split by 3 or more underscores, hyphens, or equals signs, allowing spaces
+            const sections = text.split(/[-_=]{3,}/).map(s => s.trim()).filter(s => s);
+            
+            if (sections.length < 5) {
+                showMessage("ទម្រង់មិនត្រឹមត្រូវ! សូមប្រាកដថាអត្ថបទមានបន្ទាត់ខណ្ឌចែកត្រឹមត្រូវ (ឧ. ___________________)។");
+                return;
+            }
+
+            try {
+                // Section 0: Try to match Store Name
+                if (sections[0]) {
+                    const s0 = sections[0].toLowerCase();
+                    Array.from(storeSelect.options).forEach(opt => {
+                        if (opt.value !== 'វិក្កយបត្រ' && s0.includes(opt.value.toLowerCase())) {
+                            storeSelect.value = opt.value;
+                        }
+                    });
+                }
+
+                // Section 1: Customer Name
+                if(sections[1]) customerNameInput.value = sections[1];
+                
+                // Section 2: Phone
+                if(sections[2]) {
+                    customerPhoneInput.value = sections[2];
+                    formatPhoneNumber(customerPhoneInput);
+                }
+
+                // Section 3: Address & Delivery
+                if(sections[3]) {
+                    let addr = sections[3];
+                    const lowerAddr = addr.toLowerCase();
+                    if (lowerAddr.includes('j&t') || lowerAddr.includes('jnt') || lowerAddr.includes('j & t')) {
+                        jtRadio.checked = true;
+                    } else if (lowerAddr.includes('vet') || lowerAddr.includes('វីរៈ')) {
+                        vetRadio.checked = true;
+                    } else if (lowerAddr.includes('ភ្នំពេញ') || lowerAddr.includes('phnom penh')) {
+                        phnompenhRadio.checked = true;
+                    }
+                    // Remove the delivery marker from address to keep it clean
+                    addr = addr.replace(/\(j&t\)|\(vet\)|\(jnt\)/i, '').trim();
+                    customerAddressInput.value = addr;
+                }
+
+                // Section 4: Items & Delivery Fee
+                if(sections[4]) {
+                    const lines = sections[4].split('\n').map(l => l.trim()).filter(l => l);
+                    currentInvoiceItems = []; 
+                    let delFee = 0;
+
+                    lines.forEach(line => {
+                        if (line.includes('សេវាដឹក') || line.toLowerCase().includes('delivery') || line.includes('សេវា')) {
+                            const feeMatch = line.match(/[\d.]+/);
+                            if (feeMatch) delFee = parseFloat(feeMatch[0]);
+                        } else {
+                            let itemName = line.replace(/^\d+[\.\)]\s*/, '').trim();
+                            let price = 0;
+                            let qty = 1;
+
+                            if (itemName.includes('=')) {
+                                const parts = itemName.split('=');
+                                itemName = parts[0].trim();
+                                const priceStr = parts[1].replace(/[^\d.]/g, '');
+                                price = parseFloat(priceStr) || 0;
+                            }
+
+                            // Extract QTY if separated by space (e.g. "កាហ្វេ 3")
+                            let qtyMatch = itemName.match(/\s+(\d+)$/);
+                            if (qtyMatch) {
+                                qty = parseInt(qtyMatch[1]);
+                                itemName = itemName.replace(/\s+(\d+)$/, '').trim();
+                                if (price > 0 && qty > 0) {
+                                    price = price / qty; // Price provided is usually total price
+                                }
+                            }
+
+                            if (itemName && price > 0) {
+                                currentInvoiceItems.push({
+                                    name: itemName,
+                                    quantity: qty,
+                                    price: price,
+                                    total: qty * price,
+                                    customerName: customerNameInput.value,
+                                    customerPhone: customerPhoneInput.value,
+                                    customerAddress: customerAddressInput.value,
+                                    deliveryOption: getDeliveryOptions(),
+                                    paymentOption: getPaymentOptions(),
+                                    paymentNotes: '',
+                                    deliveryFee: delFee,
+                                    storeName: getStoreName(),
+                                    sellerName: getSellerName(),
+                                    generalNote: '',
+                                    timestamp: new Date()
+                                });
+                            }
+                        }
+                    });
+                    deliveryFeeInput.value = delFee;
+                    renderSalesList();
+                }
+
+                // Section 5: Payment & TxD
+                if(sections[5]) {
+                    const parts = sections[5].split('|');
+                    if (parts.length > 1) {
+                        const payInfo = parts[1].trim();
+                        const lowerPayInfo = payInfo.toLowerCase();
+                        
+                        if (lowerPayInfo.includes('aba')) paymentSelect.value = 'ABA';
+                        else if (lowerPayInfo.includes('ac') || lowerPayInfo.includes('អេស៊ី')) paymentSelect.value = 'AC';
+                        else if (lowerPayInfo.includes('wing') || lowerPayInfo.includes('វីង')) paymentSelect.value = 'Wing';
+                        else if (lowerPayInfo.includes('អ្នកដឹក')) paymentSelect.value = 'តាមអ្នកដឹក';
+                        else {
+                             paymentSelect.value = 'ធនាគារផ្សេង'; 
+                             if(otherPaymentMethodInput) otherPaymentMethodInput.value = payInfo.split(' ')[0] || '';
+                        }
+
+                        const txdMatch = payInfo.match(/\d{4,}/); // 4+ digits for TxD
+                        if (txdMatch) {
+                            paymentNotesInput.value = txdMatch[0];
+                        } else {
+                            const remaining = payInfo.replace(/(aba|ac|wing|វីង|អ្នកដឹក)\s*/i, '').trim();
+                            if (remaining) paymentNotesInput.value = remaining;
+                        }
+                        
+                        paymentSelect.dispatchEvent(new Event('change'));
+                    }
+                }
+
+                // Section 6: Seller & Commission Qty
+                if(sections[6]) {
+                    const sellerPart = sections[6];
+                    const match = sellerPart.match(/^(.*?)\s*ចំនួន\s*(\d+(\.\d+)?)/i);
+                    let parsedSeller = sellerPart;
+                    let parsedQty = '';
+
+                    if (match) {
+                        parsedSeller = match[1].trim();
+                        parsedQty = match[2];
+                    }
+
+                    let found = false;
+                    document.querySelectorAll('.seller-select-checkbox').forEach(cb => {
+                        if (cb.dataset.sellerName.toLowerCase() === parsedSeller.toLowerCase()) {
+                            cb.checked = true;
+                            found = true;
+                        } else {
+                            cb.checked = false;
+                        }
+                    });
+                    
+                    if (!found) {
+                        document.querySelectorAll('.seller-select-checkbox').forEach(cb => {
+                            if (parsedSeller.toLowerCase().includes(cb.dataset.sellerName.toLowerCase())) {
+                                cb.checked = true;
+                            }
+                        });
+                    }
+
+                    const commissionQtyInput = document.getElementById('commissionQty');
+                    if (commissionQtyInput) {
+                        commissionQtyInput.value = parsedQty;
+                    }
+                }
+
+                // Section 7: General Note
+                if(sections[7]) {
+                    enableGeneralNoteCheckbox.checked = true;
+                    generalNoteInputContainer.classList.remove('hidden');
+                    generalNoteInput.value = sections[7];
+                } else {
+                    enableGeneralNoteCheckbox.checked = false;
+                    generalNoteInputContainer.classList.add('hidden');
+                    generalNoteInput.value = '';
+                }
+
+                showMessage("ទាញយក និងបំពេញទិន្នន័យពី Telegram ដោយស្វ័យប្រវត្តិរួចរាល់!");
+            } catch (e) {
+                console.error(e);
+                showMessage("មានបញ្ហាក្នុងការទាញយកទិន្នន័យ សូមពិនិត្យមើលទម្រង់អត្ថបទឡើងវិញ!");
+            }
         };
 
         const addItem = () => {
@@ -1701,6 +2048,9 @@
             editPaymentNotesInput.value = invoice.paymentNotes || '';
             editDeliveryOptionSelect.value = invoice.deliveryOption || 'មិនបានជ្រើសរើស';
             editDeliveryFeeInput.value = (invoice.deliveryFee || 0).toFixed(2);
+            if (editPackageSize) editPackageSize.value = invoice.packageSize || 'normal'; // Load package size
+            if (editCommissionQty) editCommissionQty.value = invoice.commissionQty !== undefined && invoice.commissionQty !== null ? invoice.commissionQty : '';
+            
             editModal.style.display = 'flex';
         };
 
@@ -1713,6 +2063,8 @@
             const updatedDeliveryFee = parseFloat(editDeliveryFeeInput.value) || 0;
             const updatedStoreName = editStoreNameSelect.value;
             const updatedPaymentNotes = editPaymentNotesInput.value.trim();
+            const updatedPackageSize = editPackageSize ? editPackageSize.value : 'normal'; // Save package size
+            const updatedCommissionQty = editCommissionQty && editCommissionQty.value ? parseFloat(editCommissionQty.value) : null;
             
             const updatedSellerName = editSellerNameSelect.value;
             const updatedGeneralNote = editGeneralNoteInput.value.trim();
@@ -1759,8 +2111,10 @@
                         customerAddress: updatedCustomerAddress,
                         deliveryOption: updatedDeliveryOption,
                         deliveryFee: updatedDeliveryFee,
+                        packageSize: updatedPackageSize,
                         storeName: updatedStoreName,
                         sellerName: updatedSellerName,
+                        commissionQty: updatedCommissionQty,
                         generalNote: updatedGeneralNote,
                         paymentOption: finalPaymentOption, 
                         paymentNotes: updatedPaymentNotes,
@@ -2069,7 +2423,13 @@
                 if (!sellerStats[name]) sellerStats[name] = { count: 0, revenue: 0, totalQty: 0 };
                 
                 const total = inv.items.reduce((s, i) => s + i.total, 0) + (inv.deliveryFee || 0);
-                const qty = inv.items.reduce((s, i) => s + (parseFloat(i.quantity) || 0), 0);
+                
+                let qty = 0;
+                if (inv.commissionQty !== undefined && inv.commissionQty !== null && inv.commissionQty !== '') {
+                    qty = parseFloat(inv.commissionQty);
+                } else {
+                    qty = inv.items.reduce((s, i) => s + (parseFloat(i.quantity) || 0), 0);
+                }
                 
                 sellerStats[name].count++;
                 sellerStats[name].revenue += total;
@@ -2104,7 +2464,21 @@
             });
         };
 
-        const generateInvoiceHTML = (invoiceData, invoiceNumber, forceHideTotals = null) => {
+        const getQRCodeDataURL = (text) => {
+            try {
+                const qr = new QRious({
+                    value: text,
+                    size: 150,
+                    level: 'M'
+                });
+                return qr.toDataURL();
+            } catch (e) {
+                console.error("QR Generation error", e);
+                return '';
+            }
+        };
+
+        const generateInvoiceHTML = (invoiceData, invoiceNumber, forceHideTotals = null, forceHideItemTotal = false) => {
             const now = invoiceData.timestamp ? invoiceData.timestamp : new Date();
             const dateObj = (typeof now.toDate === 'function') ? now.toDate() : now;
             
@@ -2127,10 +2501,12 @@
             const deliveryFee = invoiceData.deliveryFee || 0;
             const finalTotal = salesTotal + deliveryFee;
 
+            const qrDataURL = getQRCodeDataURL(invoiceNumber); // Generate QR for this invoice
+
             // Load settings
             const s = receiptSettings;
             const hideTotals = forceHideTotals !== null ? forceHideTotals : s.hideTotals;
-            const hideItemTotal = s.hideItemTotal || false;
+            const hideItemTotal = forceHideItemTotal; // Use the passed argument
             const footerColSpan = hideItemTotal ? 1 : 2;
             const lineHeightStr = s.lineHeight || 1.5;
             const footerLineHeightStr = s.footerLineHeight || 1.5;
@@ -2176,31 +2552,256 @@
                 </tr>`;
             });
             html += `
-                        </tbody>`;
+                        </tbody>
+                    </table>`;
             
             if (!hideTotals) {
                 html += `
-                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$${salesTotal.toFixed(2)}</td></tr>
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td></tr>
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td></tr>
-                        </tfoot>
+                        <table style="width: 100%; border-collapse: collapse; font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000; margin-top: 2px;">
+                            <tr>
+                                <td rowspan="3" style="width: 70px; vertical-align: bottom; padding-top: 4px;">
+                                    ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
+                                </td>
+                                <td style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td>
+                                <td style="text-align: right; padding-top: 4px; width: 70px;">$${salesTotal.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td>
+                                <td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td>
+                            </tr>
+                        </table>
                 `;
             } else {
                 html += `
-                        <tfoot style="border-top: 1px dashed #000;">
-                            <tr><td colspan="${footerColSpan + 1}" style="padding-top: 2px;"></td></tr>
-                        </tfoot>
+                        <div style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 2px; display: flex; justify-content: flex-start;">
+                            ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
+                        </div>
                 `;
             }
             
             html += `
-                    </table>
-                    
                     ${generalNote ? `<div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">${generalNote}</div>` : ''}
                 </div>
             `;
             return html;
+        };
+
+        const startScanner = () => {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText, decodedResult) => {
+                    handleSuccessfulScan(decodedText);
+                },
+                (errorMessage) => {
+                    // Ignore parse errors as they are frequent when searching for a code
+                }
+            ).catch((err) => {
+                console.error("Scanner error", err);
+                showMessage("មិនអាចបើកកាមេរ៉ាបានទេ! សូមពិនិត្យមើលការអនុញ្ញាត (Camera Permissions)។");
+            });
+        };
+
+        const stopScanner = () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error("Failed to stop scanner", err));
+            }
+        };
+
+        let isScannerRunning = false;
+
+        const toggleScanner = () => {
+            if (isScannerRunning) {
+                stopScanner();
+                toggleScannerBtn.textContent = 'បើកកាមេរ៉ា';
+                toggleScannerBtn.classList.replace('bg-red-600', 'bg-indigo-600');
+                toggleScannerBtn.classList.replace('hover:bg-red-700', 'hover:bg-indigo-700');
+                scannerContainerWrapper.classList.add('hidden');
+                isScannerRunning = false;
+            } else {
+                scannerContainerWrapper.classList.remove('hidden');
+                startScanner();
+                toggleScannerBtn.textContent = 'បិទកាមេរ៉ា';
+                toggleScannerBtn.classList.replace('bg-indigo-600', 'bg-red-600');
+                toggleScannerBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-red-700');
+                isScannerRunning = true;
+            }
+        };
+
+        const playBeep = (freq, type, duration) => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                setTimeout(() => { oscillator.stop(); audioCtx.close(); }, duration);
+            } catch(e) {}
+        }
+        const playSuccessSound = () => playBeep(800, 'sine', 150);
+        const playWarningSound = () => { playBeep(300, 'square', 200); setTimeout(() => playBeep(300, 'square', 200), 250); };
+        const playErrorSound = () => playBeep(200, 'sawtooth', 500);
+
+        let lastScannedCode = '';
+        const handleSuccessfulScan = async (text) => {
+            if (text === lastScannedCode) return; 
+            lastScannedCode = text;
+            setTimeout(() => lastScannedCode = '', 4000); 
+
+            const inv = historyInvoices.find(i => i.invoiceNumber === text);
+            const selectedDateStr = scanDateFilter.value || getTodayDateString();
+            
+            if (!inv) {
+                playErrorSound();
+                showMessage(`រកមិនឃើញវិក្កយបត្រលេខ: ${text}`);
+                return;
+            }
+
+            // Check if exactly this invoice was already scanned today
+            let isAlreadyScanned = false;
+            if (inv.scannedAt) {
+                const scanDate = inv.scannedAt.toDate();
+                const scanDateStr = `${scanDate.getFullYear()}-${String(scanDate.getMonth()+1).padStart(2,'0')}-${String(scanDate.getDate()).padStart(2,'0')}`;
+                if (scanDateStr === selectedDateStr) {
+                    isAlreadyScanned = true;
+                }
+            }
+
+            if (isAlreadyScanned) {
+                playWarningSound();
+                showRichMessage('ប្រយ័ត្ន! ស្កែនជាន់គ្នា', `វិក្កយបត្រ <b>${text}</b> របស់អតិថិជន <b>${inv.customerName}</b> ត្រូវបានស្កែនរួចហើយសម្រាប់ថ្ងៃនេះ!`);
+                return;
+            }
+
+            // NEW: Check for duplicate customer name or TxD among TODAY'S SCANNED invoices
+            let isDuplicateData = false;
+            let duplicateInvNum = '';
+            const lowerCurrentName = (inv.customerName || '').trim().toLowerCase();
+            const currentTxd = (inv.paymentNotes || '').trim().toLowerCase();
+
+            for (const otherInv of historyInvoices) {
+                if (otherInv.id === inv.id) continue;
+                if (otherInv.scannedAt) {
+                    const scanDate = otherInv.scannedAt.toDate();
+                    const dStr = `${scanDate.getFullYear()}-${String(scanDate.getMonth()+1).padStart(2,'0')}-${String(scanDate.getDate()).padStart(2,'0')}`;
+                    if (dStr === selectedDateStr) { // If it was scanned today
+                        const otherName = (otherInv.customerName || '').trim().toLowerCase();
+                        const otherTxd = (otherInv.paymentNotes || '').trim().toLowerCase();
+
+                        if ((lowerCurrentName && lowerCurrentName.length > 2 && otherName === lowerCurrentName) ||
+                            (currentTxd && currentTxd.length > 3 && otherTxd === currentTxd)) {
+                            isDuplicateData = true;
+                            duplicateInvNum = otherInv.invoiceNumber;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (isDuplicateData) {
+                playWarningSound();
+                showConfirmation(`ប្រយ័ត្ន! អតិថិជននេះ ឬ ការវេទឹកប្រាក់នេះ ត្រូវបានស្កែនរួចហើយថ្ងៃនេះ (ជាន់គ្នានឹង: ${duplicateInvNum})។ តើអ្នកពិតជាចង់បន្តស្កែនទេ?`, async (yes) => {
+                    if (yes) {
+                        playSuccessSound();
+                        await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, inv.id), { scannedAt: new Date() });
+                    }
+                });
+                return;
+            }
+
+            // Valid Scan
+            playSuccessSound();
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, inv.id), {
+                    scannedAt: new Date()
+                });
+            } catch (e) {
+                console.error("Error updating scan status", e);
+            }
+        };
+
+        const renderScanLists = () => {
+            if (!scanDateFilter) return;
+            const selectedDateStr = scanDateFilter.value;
+            if (!selectedDateStr) return;
+
+            let ppCount = 0;
+            let provCount = 0;
+            let vetCount = 0;
+            let jtCount = 0;
+            let totalProvCost = 0;
+
+            scanPPList.innerHTML = '';
+            scanProvList.innerHTML = '';
+
+            const scannedInvoices = historyInvoices.filter(inv => {
+                if (!inv.scannedAt) return false;
+                const scanDate = inv.scannedAt.toDate();
+                const dStr = `${scanDate.getFullYear()}-${String(scanDate.getMonth()+1).padStart(2,'0')}-${String(scanDate.getDate()).padStart(2,'0')}`;
+                return dStr === selectedDateStr;
+            }).sort((a, b) => b.scannedAt.toDate() - a.scannedAt.toDate());
+
+            scannedInvoices.forEach(inv => {
+                const isPP = inv.deliveryOption === 'ភ្នំពេញ';
+                if (isPP) {
+                    ppCount++;
+                } else {
+                    provCount++;
+                    if (inv.deliveryOption === 'VET') vetCount++;
+                    if (inv.deliveryOption === 'J&T') jtCount++;
+
+                    // Calculate cost for province shipping
+                    const pSize = inv.packageSize || 'normal';
+                    totalProvCost += (pSize === 'box') ? 10000 : 4500;
+                }
+
+                const timeStr = inv.scannedAt.toDate().toLocaleTimeString('km-KH');
+                const bgColor = isPP ? 'bg-green-100 border-green-500' : 'bg-orange-100 border-orange-500';
+                const textColor = isPP ? 'text-green-800' : 'text-orange-800';
+                
+                const itemHtml = `
+                    <div class="p-3 rounded-lg shadow-sm border-l-4 ${bgColor} transition-all">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold flex items-center gap-1 ${textColor}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    ${inv.invoiceNumber}
+                                </p>
+                                <p class="text-sm font-medium text-gray-800 mt-1">${inv.customerName}</p>
+                                <p class="text-xs text-gray-600">ដឹកតាម: <span class="font-bold ${textColor}">${inv.deliveryOption}</span></p>
+                            </div>
+                            <span class="text-xs text-gray-500 font-medium">${timeStr}</span>
+                        </div>
+                    </div>
+                `;
+                
+                if (isPP) {
+                    scanPPList.insertAdjacentHTML('beforeend', itemHtml);
+                } else {
+                    scanProvList.insertAdjacentHTML('beforeend', itemHtml);
+                }
+            });
+
+            if(ppCount === 0) scanPPList.innerHTML = '<p class="text-center text-gray-400 text-sm italic py-4">គ្មានទិន្នន័យ...</p>';
+            if(provCount === 0) scanProvList.innerHTML = '<p class="text-center text-gray-400 text-sm italic py-4">គ្មានទិន្នន័យ...</p>';
+
+            if(scanTotalCount) scanTotalCount.textContent = ppCount + provCount;
+            if(scanPPCount) scanPPCount.textContent = ppCount;
+            if(scanProvCount) scanProvCount.textContent = provCount;
+            if(scanVetCount) scanVetCount.textContent = vetCount;
+            if(scanJtCount) scanJtCount.textContent = jtCount;
+            if(scanTotalCost) scanTotalCost.textContent = totalProvCost.toLocaleString('en-US') + ' ៛';
         };
 
         const toggleView = (viewToShow) => {
@@ -2209,23 +2810,29 @@
             sellerOptionsView.style.display = 'none'; updatePaymentView.style.display = 'none';
             receiptSettingsView.style.display = 'none'; 
             historyView.style.display = 'none';
+            scanPackageView.style.display = 'none';
             
-            [dashboardNavBtn, customerInfoNavBtn, addItemNavBtn, storeOptionsNavBtn, sellerOptionsNavBtn, updatePaymentNavBtn, receiptSettingsNavBtn, historyNavBtn].forEach(btn => btn.classList.replace('bg-indigo-900', 'text-indigo-100'));
-            
-            if (viewToShow === 'dashboard') { dashboardView.style.display = 'block'; }
+            const allNavBtns = [dashboardNavBtn, customerInfoNavBtn, addItemNavBtn, storeOptionsNavBtn, sellerOptionsNavBtn, updatePaymentNavBtn, receiptSettingsNavBtn, historyNavBtn, scanPackageNavBtn];
+            allNavBtns.forEach(btn => {
+                if(btn) {
+                    btn.classList.remove('bg-indigo-900', 'text-white', 'shadow-inner');
+                    btn.classList.add('text-indigo-100', 'hover:bg-indigo-700/50', 'hover:text-white');
+                }
+            });
+
+            let activeBtn = null;
+            if (viewToShow === 'dashboard') { dashboardView.style.display = 'block'; activeBtn = dashboardNavBtn; }
             else if (viewToShow === 'customerInfo') { 
-                customerInfoView.style.display = 'block'; 
+                customerInfoView.style.display = 'block'; activeBtn = customerInfoNavBtn;
                 populateMainStoreSelect();
                 renderSellerCheckboxes();
             }
-            else if (viewToShow === 'addItem') { addItemView.style.display = 'block'; }
-            else if (viewToShow === 'storeOptions') { storeOptionsView.style.display = 'block'; renderStoresManagementList(); }
-            else if (viewToShow === 'sellerOptions') { sellerOptionsView.style.display = 'block'; renderSellersManagementList(); }
-            else if (viewToShow === 'updatePayment') { updatePaymentView.style.display = 'block'; }
+            else if (viewToShow === 'addItem') { addItemView.style.display = 'block'; activeBtn = addItemNavBtn; }
+            else if (viewToShow === 'storeOptions') { storeOptionsView.style.display = 'block'; activeBtn = storeOptionsNavBtn; renderStoresManagementList(); }
+            else if (viewToShow === 'sellerOptions') { sellerOptionsView.style.display = 'block'; activeBtn = sellerOptionsNavBtn; renderSellersManagementList(); }
+            else if (viewToShow === 'updatePayment') { updatePaymentView.style.display = 'block'; activeBtn = updatePaymentNavBtn; }
             else if (viewToShow === 'receiptSettings') { 
-                receiptSettingsView.style.display = 'block'; 
-                rsHideTotals.checked = receiptSettings.hideTotals || false;
-                rsHideItemTotal.checked = receiptSettings.hideItemTotal || false;
+                receiptSettingsView.style.display = 'block'; activeBtn = receiptSettingsNavBtn;
                 rsTitleSize.value = receiptSettings.titleSize;
                 rsTitleBold.checked = receiptSettings.titleBold;
                 rsDateSize.value = receiptSettings.dateSize;
@@ -2247,7 +2854,31 @@
                 
                 renderReceiptDemo();
             }
-            else if (viewToShow === 'history') { historyView.style.display = 'block'; renderHistoryList(); }
+            else if (viewToShow === 'history') { historyView.style.display = 'block'; activeBtn = historyNavBtn; renderHistoryList(); }
+            else if (viewToShow === 'scanPackage') { 
+                scanPackageView.style.display = 'block'; 
+                activeBtn = scanPackageNavBtn; 
+                if (!scanDateFilter.value) scanDateFilter.value = getTodayDateString();
+                renderScanLists();
+            }
+            
+            // Stop scanner if switching away
+            if (viewToShow !== 'scanPackage' && isScannerRunning) {
+                toggleScanner();
+            }
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('text-indigo-100', 'hover:bg-indigo-700/50', 'hover:text-white');
+                activeBtn.classList.add('bg-indigo-900', 'text-white', 'shadow-inner');
+            }
+
+            // Auto-close sidebar on mobile
+            const sidebar = document.getElementById('sidebar');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+            if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
         };
 
         const getTodayDateString = () => {
@@ -2275,6 +2906,8 @@
             const lineHeightStr = s.lineHeight || 1.5;
             const footerLineHeightStr = s.footerLineHeight || 1.5;
             const footerColSpan = s.hideItemTotal ? 1 : 2;
+
+            const qrDataURL = getQRCodeDataURL('C0000000'); // Demo QR code
 
             const day = new Date().getDate();
             const month = new Date().getMonth() + 1;
@@ -2328,27 +2961,38 @@
                                 <td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">2</td>
                                 ${!s.hideItemTotal ? `<td style="text-align: right; padding: 4px 0; vertical-align: top; line-height: ${lineHeightStr};">$20.00</td>` : ''}
                             </tr>
-                        </tbody>`;
+                        </tbody>
+                    </table>`;
             
             if (!s.hideTotals) {
                 html += `
-                        <tfoot style="font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000;">
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td><td style="text-align: right; padding-top: 4px;">$35.00</td></tr>
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td><td style="text-align: right; padding-top: 4px;">$1.50</td></tr>
-                            <tr><td colspan="${footerColSpan}" style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td><td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td></tr>
-                        </tfoot>
+                        <table style="width: 100%; border-collapse: collapse; font-size: ${s.totalSize}px; font-weight: ${s.totalBold ? 'bold' : 'normal'}; line-height: ${footerLineHeightStr}; border-top: 1px dashed #000; margin-top: 2px;">
+                            <tr>
+                                <td rowspan="3" style="width: 70px; vertical-align: bottom; padding-top: 4px;">
+                                    ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
+                                </td>
+                                <td style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td>
+                                <td style="text-align: right; padding-top: 4px; width: 70px;">$35.00</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td>
+                                <td style="text-align: right; padding-top: 4px;">$1.50</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td>
+                            </tr>
+                        </table>
                 `;
             } else {
                 html += `
-                        <tfoot style="border-top: 1px dashed #000;">
-                            <tr><td colspan="${footerColSpan + 1}" style="padding-top: 2px;"></td></tr>
-                        </tfoot>
+                        <div style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 2px; display: flex; justify-content: flex-start;">
+                            ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
+                        </div>
                 `;
             }
             
             html += `
-                    </table>
-                    
                     <div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed #000; text-align: center; font-size: ${s.noteSize}px; font-weight: ${s.noteBold ? 'bold' : 'normal'}; line-height: ${lineHeightStr};">សូមអរគុណសម្រាប់ការគាំទ្រ!</div>
                 </div>
             `;
@@ -2483,7 +3127,7 @@
                 };
                 
                 const hideTotals = document.getElementById('updateHideTotals').checked;
-                const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber, hideTotals);
+                const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber, hideTotals, false);
                 await showImagePreview(generatedHtml);
 
                 updatePaymentFormContainer.classList.add('hidden');
@@ -2562,7 +3206,9 @@
                 printWindow.document.write('</body></html>');
                 printWindow.document.close();
                 printWindow.focus();
-                printWindow.print();
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
             };
         };
 
@@ -2584,17 +3230,16 @@
         }
 
         const saveInvoiceTransaction = async (invoiceDetails, shouldPrint, forceHideTotals = null) => {
-            const { customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote } = invoiceDetails;
+            const { customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, packageSize, storeName, sellerName, commissionQty, generalNote } = invoiceDetails;
             try {
                 const newInvoiceNumber = 'C' + (historyInvoices.length + 1).toString().padStart(7, '0');
                 const invoiceData = {
-                    customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, storeName, sellerName, generalNote,
+                    customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, packageSize, storeName, sellerName, commissionQty, generalNote,
                     items: currentInvoiceItems, timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: shouldPrint ? new Date() : null,
-                    printCount: shouldPrint ? 1 : 0
                 };
                 await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                 if (shouldPrint) {
-                    printInvoice(invoiceData, newInvoiceNumber, forceHideTotals);
+                    printInvoice(invoiceData, newInvoiceNumber, forceHideTotals, false);
                     showMessage('វិក្កយបត្រត្រូវបានបោះពុម្ព។');
                 } else {
                     showMessage('ទិន្នន័យត្រូវបានរក្សាទុក។');
@@ -2614,6 +3259,8 @@
             const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
             const paymentNotes = paymentNotesInput.value.trim();
             const hideTotals = document.getElementById('quickHideTotals').checked;
+            const packageSize = packageSizeSelect ? packageSizeSelect.value : 'normal';
+            const commissionQtyVal = document.getElementById('commissionQty') ? parseFloat(document.getElementById('commissionQty').value) : null;
             
             if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
                 showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
@@ -2637,7 +3284,7 @@
                          saveInvoiceTransaction({
                            customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
                            paymentOption: getPaymentOptions(), paymentNotes, 
-                           deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
+                           deliveryFee: parseFloat(deliveryFeeInput.value) || 0, packageSize, storeName, sellerName, commissionQty: commissionQtyVal, generalNote
                         }, shouldPrint, hideTotals);
                      };
                      return; 
@@ -2647,7 +3294,7 @@
             saveInvoiceTransaction({
                customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
                paymentOption: getPaymentOptions(), paymentNotes, 
-               deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote
+               deliveryFee: parseFloat(deliveryFeeInput.value) || 0, packageSize, storeName, sellerName, commissionQty: commissionQtyVal, generalNote
             }, shouldPrint, hideTotals);
         };
 
@@ -2660,6 +3307,8 @@
             const generalNote = enableGeneralNoteCheckbox.checked ? generalNoteInput.value.trim() : '';
             const paymentNotes = paymentNotesInput.value.trim();
             const hideTotals = document.getElementById('quickHideTotals').checked;
+            const packageSize = packageSizeSelect ? packageSizeSelect.value : 'normal';
+            const commissionQtyVal = document.getElementById('commissionQty') ? parseFloat(document.getElementById('commissionQty').value) : null;
             
             if (!customerName || !customerAddress || storeName === 'វិក្កយបត្រ') {
                 showMessage('សូមបំពេញឈ្មោះអតិថិជន អាសយដ្ឋាន និងជ្រើសរើសហាង។'); return;
@@ -2671,14 +3320,13 @@
                     const invoiceData = {
                         customerName, customerPhone: customerPhoneInput.value.trim(), customerAddress, deliveryOption: getDeliveryOptions(), 
                         paymentOption: getPaymentOptions(), paymentNotes: paymentNotesInput.value.trim(), 
-                        deliveryFee: parseFloat(deliveryFeeInput.value) || 0, storeName, sellerName, generalNote,
+                        deliveryFee: parseFloat(deliveryFeeInput.value) || 0, packageSize, storeName, sellerName, commissionQty: commissionQtyVal, generalNote,
                         items: [...currentInvoiceItems], timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: null,
-                        printCount: 0
                     };
                     
                     await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                     
-                    const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber, hideTotals);
+                    const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber, hideTotals, false);
                     await showImagePreview(generatedHtml);
 
                     currentInvoiceItems = [];
@@ -2715,21 +3363,14 @@
             const docId = event.currentTarget.dataset.docId;
             const invoice = historyInvoices.find(inv => inv.id === docId);
             const hideTotals = document.getElementById('historyHideTotals').checked;
+            const hideItemTotal = document.getElementById('historyHideItemTotalColumn').checked;
             if (invoice) {
-                printInvoice(invoice, invoice.invoiceNumber, hideTotals);
-                try {
-                    const newCount = (invoice.printCount || 0) + 1;
-                    await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId), {
-                        printCount: newCount
-                    });
-                } catch (e) {
-                    console.error("Error updating print count:", e);
-                }
+                printInvoice(invoice, invoice.invoiceNumber, hideTotals, hideItemTotal);
             }
         };
 
-        const printInvoice = (invoiceData, invoiceNumber, forceHideTotals = null) => {
-            const invoiceHTML = generateInvoiceHTML(invoiceData, invoiceNumber, forceHideTotals);
+        const printInvoice = (invoiceData, invoiceNumber, forceHideTotals = null, forceHideItemTotal = false) => {
+            const invoiceHTML = generateInvoiceHTML(invoiceData, invoiceNumber, forceHideTotals, forceHideItemTotal);
             const printWindow = window.open('', '_blank', 'height=600,width=800');
             const s = receiptSettings;
             const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
@@ -2739,7 +3380,9 @@
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.focus();
-            printWindow.print();
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         };
 
         const printMultipleInvoices = (invoiceIdsSet) => {
@@ -2751,6 +3394,7 @@
             const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
             const mr = s.marginRight !== undefined ? s.marginRight : 4;
             const hideTotals = document.getElementById('historyHideTotals').checked;
+            const hideItemTotal = document.getElementById('historyHideItemTotalColumn').checked;
             
             printWindow.document.write(`<html><head><title>បោះពុម្ពវិក្កយបត្រចំនួន ${invoicesToPrint.length}</title><style>
                 @page { size: 80mm auto; margin: 0; } 
@@ -2762,7 +3406,7 @@
             </style></head><body>`);
             
             invoicesToPrint.forEach((inv) => {
-                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber, hideTotals);
+                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber, hideTotals, hideItemTotal);
                 printWindow.document.write(`<div class="page-break">${invoiceHTML}</div>`);
             });
             
@@ -2773,21 +3417,6 @@
             // Timeout allows the browser rendering to finish layouting
             setTimeout(async () => {
                 printWindow.print();
-                
-                // Add print count to database for all selected invoices
-                for (const id of invoiceIdsSet) {
-                    const inv = historyInvoices.find(i => i.id === id);
-                    if (inv) {
-                        try {
-                            const newCount = (inv.printCount || 0) + 1;
-                            await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, id), {
-                                printCount: newCount
-                            });
-                        } catch (e) {
-                            console.error("Error updating print count:", e);
-                        }
-                    }
-                }
                 
                 // Clear checkboxes after print dialog opens
                 selectedInvoiceIds.clear();
@@ -2897,6 +3526,7 @@
                     historyInvoices = [];
                     snap.forEach((doc) => historyInvoices.push({ id: doc.id, ...doc.data() }));
                     populateProductDatalist(); renderHistoryList(); 
+                    renderScanLists(); // Sync scanner lists automatically
                     
                     if (!startDateInput.value) startDateInput.value = getTodayDateString();
                     if (!endDateInput.value) endDateInput.value = getTodayDateString();
@@ -2951,6 +3581,48 @@
             if(quickHideTotals) quickHideTotals.checked = receiptSettings.hideTotals || false;
             if(historyHideTotals) historyHideTotals.checked = receiptSettings.hideTotals || false;
             if(updateHideTotals) updateHideTotals.checked = receiptSettings.hideTotals || false;
+            
+            // Sidebar Mobile Toggles
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+            const openSidebar = () => {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            };
+
+            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
+            if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+            if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+            
+            // Desktop Sidebar Toggle
+            if (desktopMenuBtn) {
+                desktopMenuBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('md:-ml-64');
+                });
+            }
+
+            // Theme Toggle Logic
+            const toggleTheme = () => {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                
+                const lightIcons = document.querySelectorAll('#lightIcon, #mobileLightIcon');
+                const darkIcons = document.querySelectorAll('#darkIcon, #mobileDarkIcon');
+                
+                lightIcons.forEach(icon => { if(icon) icon.classList.toggle('hidden', isDark); });
+                darkIcons.forEach(icon => { if(icon) icon.classList.toggle('hidden', !isDark); });
+            };
+
+            if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+            const mobileThemeToggleBtn = document.getElementById('mobileThemeToggleBtn');
+            if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener('click', toggleTheme);
         });
 
         // Listeners
@@ -2960,6 +3632,9 @@
         if (editSaveBtn) editSaveBtn.addEventListener('click', saveEditedInvoice);
         if (editCancelBtn) editCancelBtn.addEventListener('click', () => editModal.style.display = 'none');
         if (previewCloseBtn) previewCloseBtn.addEventListener('click', () => previewModal.style.display = 'none');
+
+        if (scanDateFilter) scanDateFilter.addEventListener('change', renderScanLists);
+        if (toggleScannerBtn) toggleScannerBtn.addEventListener('click', toggleScanner);
         
         if (editPaymentOptionSelect) editPaymentOptionSelect.addEventListener('change', () => {
              const isOther = editPaymentOptionSelect.value === 'ធនាគារផ្សេង';
@@ -3040,6 +3715,8 @@
 
         if (addItemBtn) addItemBtn.addEventListener('click', addItem);
         if (clearFormBtn) clearFormBtn.addEventListener('click', clearFormInputs);
+        const parseOrderBtn = document.getElementById('parseOrderBtn');
+        if (parseOrderBtn) parseOrderBtn.addEventListener('click', parsePastedOrder);
         if (printBtn) printBtn.addEventListener('click', () => handleSaveAction(true));
         if (saveOnlyBtn) saveOnlyBtn.addEventListener('click', () => handleSaveAction(false));
         if (saveAndPreviewBtn) saveAndPreviewBtn.addEventListener('click', handleSaveAndPreview); 
@@ -3050,6 +3727,7 @@
         if (addNewSellerBtn) addNewSellerBtn.addEventListener('click', addNewSeller);
 
         if (dashboardNavBtn) dashboardNavBtn.addEventListener('click', () => toggleView('dashboard'));
+        if (scanPackageNavBtn) scanPackageNavBtn.addEventListener('click', () => toggleView('scanPackage'));
         if (customerInfoNavBtn) customerInfoNavBtn.addEventListener('click', () => toggleView('customerInfo'));
         if (addItemNavBtn) addItemNavBtn.addEventListener('click', () => toggleView('addItem'));
         if (storeOptionsNavBtn) storeOptionsNavBtn.addEventListener('click', () => toggleView('storeOptions'));
