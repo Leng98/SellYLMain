@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>កម្មវិធីគ្រប់គ្រងការលក់_YL_v11</title>
+    <title>កម្មវិធីគ្រប់គ្រងការលក់_YL_v12</title>
     <!-- Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Add html2canvas for image generation -->
@@ -39,9 +39,11 @@
             text-align: center; max-width: 400px; width: 90%;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); max-height: 90vh; overflow-y: auto;
         }
-        #editModal .modal-content, #messageModal .modal-content { max-width: 550px; text-align: left; }
+        #editModal .modal-content { max-width: 700px; text-align: left; }
+        #messageModal .modal-content { max-width: 550px; text-align: left; }
         #messageModal .modal-content { text-align: center; }
         #modalRichContent { text-align: left; }
+        /* Preview Modal Styles */
         #previewModal .modal-content { width: auto; max-width: 450px; padding: 20px; background-color: #fff; }
         #invoicePreviewContent { border: 1px solid #ddd; background-color: #fff; margin: 10px; display: flex; justify-content: center; }
         .modal-buttons { margin-top: 16px; margin-bottom: 16px; display: flex; justify-content: center; gap: 16px; }
@@ -71,6 +73,7 @@
         body.dark-mode .bg-green-100 { background-color: #1e3a2f; color: #e2e8f0; }
         body.dark-mode .text-indigo-700, body.dark-mode .text-indigo-800, body.dark-mode .text-green-700, body.dark-mode .text-green-800, body.dark-mode .text-yellow-700, body.dark-mode .text-yellow-800, body.dark-mode .text-blue-700, body.dark-mode .text-blue-800 { color: #e2e8f0; }
         body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #4a5568; color: #e2e8f0; }
+        body.dark-mode input::placeholder, body.dark-mode select::placeholder, body.dark-mode textarea::placeholder { color: #a0aec0; }
         body.dark-mode .modal-content { background-color: #2d3748; }
         body.dark-mode table tbody tr:hover { background-color: #4a5568; }
     </style>
@@ -93,6 +96,7 @@
         <div class="modal-content">
             <h2 class="text-lg font-bold text-gray-700 m-4">មើលវិក្កយបត្រមុនបោះពុម្ព</h2>
             <div id="invoicePreviewContent" class="border border-gray-300 p-2 bg-white text-left text-sm shadow-inner" style="min-height: 200px;">
+                <!-- Invoice HTML will be injected here -->
             </div>
             <div class="modal-buttons">
                 <button id="previewCopyBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">ចម្លងរូបភាព</button>
@@ -116,84 +120,118 @@
     <!-- Modal for Editing Customer Info -->
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">កែប្រែព័ត៌មានអតិថិជន</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">កែប្រែព័ត៌មានអតិថិជន និងទំនិញ</h2>
             <input type="hidden" id="editDocId">
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label for="editSellerName" class="block text-sm font-medium text-gray-700">អ្នកលក់</label>
-                        <select id="editSellerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="editSellerName" class="block text-sm font-medium text-gray-700">អ្នកលក់</label>
+                            <select id="editSellerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
+                        </div>
+                        <div>
+                            <label for="editCommissionQty" class="block text-sm font-medium text-gray-700">ចំនួនគិតកម្រៃ</label>
+                            <input type="number" id="editCommissionQty" placeholder="ស្វ័យប្រវត្តិ" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
                     </div>
                     <div>
-                        <label for="editCommissionQty" class="block text-sm font-medium text-gray-700">ចំនួនគិតកម្រៃ</label>
-                        <input type="number" id="editCommissionQty" placeholder="ស្វ័យប្រវត្តិ" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                </div>
-                <div>
-                    <label for="editCustomerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអតិថិជន</label>
-                    <input type="text" id="editCustomerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div>
-                    <label for="editCustomerPhone" class="block text-sm font-medium text-gray-700">លេខទូរស័ព្ទ</label>
-                    <input type="text" id="editCustomerPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div>
-                    <label for="editCustomerAddress" class="block text-sm font-medium text-gray-700">អាសយដ្ឋាន</label>
-                    <input type="text" id="editCustomerAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="pt-2">
-                    <label for="editStoreName" class="block text-sm font-medium text-gray-700">ហាង</label>
-                    <select id="editStoreName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
-                </div>
-                <div class="pt-2">
-                    <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700">ជម្រើសសម្រាប់ការដឹកជញ្ជូន</label>
-                    <select id="editDeliveryOption" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="VET">VET</option>
-                        <option value="J&T">J&T</option>
-                        <option value="ភ្នំពេញ">ភ្នំពេញ</option>
-                        <option value="មិនបានជ្រើសរើស">មិនបានជ្រើសរើស</option>
-                    </select>
-                </div>
-                <div class="pt-2 grid grid-cols-2 gap-2">
-                    <div>
-                        <label for="editDeliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក ($)</label>
-                        <input type="number" id="editDeliveryFee" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        <label for="editCustomerName" class="block text-sm font-medium text-gray-700">ឈ្មោះអតិថិជន</label>
+                        <input type="text" id="editCustomerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div>
-                        <label for="editPackageSize" class="block text-sm font-medium text-gray-700">ប្រភេទវេចខ្ចប់</label>
-                        <select id="editPackageSize" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="normal">កញ្ចប់ធម្មតា (៤៥០០៛)</option>
-                            <option value="box">ជាកេស (១០០០០៛)</option>
+                        <label for="editCustomerPhone" class="block text-sm font-medium text-gray-700">លេខទូរស័ព្ទ</label>
+                        <input type="text" id="editCustomerPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="editCustomerAddress" class="block text-sm font-medium text-gray-700">អាសយដ្ឋាន</label>
+                        <input type="text" id="editCustomerAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="editStoreName" class="block text-sm font-medium text-gray-700">ហាង</label>
+                        <select id="editStoreName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700">ជម្រើសសម្រាប់ការដឹកជញ្ជូន</label>
+                        <select id="editDeliveryOption" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="VET">VET</option>
+                            <option value="J&T">J&T</option>
+                            <option value="ភ្នំពេញ">ភ្នំពេញ</option>
+                            <option value="មិនបានជ្រើសរើស">មិនបានជ្រើសរើស</option>
                         </select>
                     </div>
-                </div>
-                 <div class="pt-2">
-                    <label for="editGeneralNote" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់ (Note ចុងវិក្កយបត្រ)</label>
-                    <input type="text" id="editGeneralNote" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="pt-2">
-                    <label for="editPaymentOptionSelect" class="block text-sm font-medium text-gray-700">ជម្រើសការទូទាត់</label>
-                    <select id="editPaymentOptionSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="AC">AC</option>
-                        <option value="ABA">ABA</option>
-                        <option value="Wing">Wing</option>
-                        <option value="តាមអ្នកដឹក">តាមអ្នកដឹក</option>
-                        <option value="ធនាគារផ្សេង">ធនាគារផ្សេង (Custom)</option>
-                        <option value="មិនទាន់វេទឹកប្រាក់">មិនទាន់វេទឹកប្រាក់ (Unpaid)</option>
-                    </select>
-                </div>
-                <div class="pt-2 hidden" id="editOtherPaymentContainer">
-                    <label for="editOtherPaymentInput" class="block text-sm font-medium text-gray-700">ឈ្មោះធនាគារ/ការទូទាត់ផ្សេងទៀត</label>
-                    <input type="text" id="editOtherPaymentInput" placeholder="ដូចជា: ធនាគារ Wing Bank, វីង, ផ្សេងៗ..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="pt-2">
-                    <label for="editPaymentNotes" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់បន្ថែម (លេខ TxD)</label>
-                    <input type="text" id="editPaymentNotes" placeholder="លេខ TxD" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="editDeliveryFee" class="block text-sm font-medium text-gray-700">តម្លៃសេវាដឹក ($)</label>
+                            <input type="number" id="editDeliveryFee" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="editPackageSize" class="block text-sm font-medium text-gray-700">ប្រភេទវេចខ្ចប់</label>
+                            <select id="editPackageSize" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="normal">កញ្ចប់ធម្មតា (៤៥០០៛)</option>
+                                <option value="box">ជាកេស (១០០០០៛)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="editGeneralNote" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់ (Note ចុងវិក្កយបត្រ)</label>
+                        <input type="text" id="editGeneralNote" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="editPaymentOptionSelect" class="block text-sm font-medium text-gray-700">ជម្រើសការទូទាត់</label>
+                        <select id="editPaymentOptionSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="AC">AC</option>
+                            <option value="ABA">ABA</option>
+                            <option value="Wing">Wing</option>
+                            <option value="តាមអ្នកដឹក">តាមអ្នកដឹក</option>
+                            <option value="ធនាគារផ្សេង">ធនាគារផ្សេង (Custom)</option>
+                            <option value="មិនទាន់វេទឹកប្រាក់">មិនទាន់វេទឹកប្រាក់ (Unpaid)</option>
+                        </select>
+                    </div>
+                    <div class="hidden" id="editOtherPaymentContainer">
+                        <label for="editOtherPaymentInput" class="block text-sm font-medium text-gray-700">ឈ្មោះធនាគារផ្សេងទៀត</label>
+                        <input type="text" id="editOtherPaymentInput" placeholder="..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="editPaymentNotes" class="block text-sm font-medium text-gray-700">កំណត់សម្គាល់បន្ថែម (លេខ TxD)</label>
+                        <input type="text" id="editPaymentNotes" placeholder="លេខ TxD" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
                 </div>
             </div>
-            <div class="modal-buttons">
-                <button id="editSaveBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300">រក្សាទុក</button>
-                <button id="editCancelBtn" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
+
+            <!-- Items Edit Section -->
+            <div class="pt-4 border-t border-gray-200 mt-5">
+                <h3 class="text-md font-semibold text-gray-800 mb-3">កែប្រែ ឬ បន្ថែមទំនិញថ្មីចូលវិក្កយបត្រ</h3>
+                
+                <div class="flex flex-wrap md:flex-nowrap gap-2 mb-4">
+                    <input type="text" id="editItemName" placeholder="ឈ្មោះទំនិញ" list="productNames" class="flex-1 rounded-md border-gray-300 shadow-sm p-2 border text-sm">
+                    <input type="number" id="editItemQty" placeholder="ចំនួន" value="1" min="1" class="w-20 rounded-md border-gray-300 shadow-sm p-2 border text-sm">
+                    <input type="number" id="editItemPrice" placeholder="តម្លៃ($)" step="0.01" class="w-24 rounded-md border-gray-300 shadow-sm p-2 border text-sm">
+                    <button id="btnEditAddItem" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm whitespace-nowrap transition-colors">បន្ថែម</button>
+                </div>
+                
+                <div class="overflow-x-auto max-h-48 overflow-y-auto custom-scrollbar border rounded-md">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                        <thead class="bg-gray-100 sticky top-0">
+                            <tr>
+                                <th class="px-3 py-2 font-medium text-gray-600">ឈ្មោះទំនិញ</th>
+                                <th class="px-3 py-2 font-medium text-gray-600 text-center">ចំនួន</th>
+                                <th class="px-3 py-2 font-medium text-gray-600 text-right">តម្លៃ</th>
+                                <th class="px-3 py-2 font-medium text-gray-600 text-right">សរុប</th>
+                                <th class="px-3 py-2 font-medium text-gray-600 text-center">លុប</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editModalItemsList" class="bg-white divide-y divide-gray-200">
+                            <!-- Dynamic items injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-buttons pt-4 border-t mt-4">
+                <button id="editSaveBtn" class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition duration-300">រក្សាទុកការកែប្រែ</button>
+                <button id="editCancelBtn" class="px-6 py-2.5 bg-gray-400 text-white font-medium rounded-md hover:bg-gray-500 transition duration-300">បោះបង់</button>
             </div>
         </div>
     </div>
@@ -323,9 +361,6 @@
                 <button id="desktopMenuBtn" class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 focus:outline-none transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <div class="flex items-center">
-                    <!-- Additional top-right actions can go here -->
-                </div>
             </header>
 
             <div id="contentArea" class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
@@ -1113,7 +1148,6 @@
             measurementId: "G-RP5KG6GY4Y"
         };
         
-        // Use environment provided configuration if available, otherwise fallback to the hardcoded ones above
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
         }
@@ -1133,9 +1167,10 @@
         let stores = [];
         let sellers = []; 
         let currentInvoiceItems = [];
+        let editingInvoiceItems = []; // NEW state for edit modal items
         let isAuthReady = false;
-        let lastAutoFilledPhone = ''; // Added to track auto-filled phone
-        let html5QrCode = null; // Scanner instance
+        let lastAutoFilledPhone = '';
+        let html5QrCode = null;
         
         let itemsPerPage = 10; 
         let currentPage = 1;
@@ -1151,10 +1186,10 @@
             noteSize: 14, noteBold: true,
             lineHeight: 1.5,
             footerLineHeight: 1.5,
-            marginLeft: -6,    // Default margins
+            marginLeft: -6,
             marginRight: 4,
-            hideTotals: false, // NEW default setting
-            hideItemTotal: false // NEW default setting
+            hideTotals: false,
+            hideItemTotal: false
         };
         let receiptSettings = JSON.parse(localStorage.getItem('receiptSettings')) || defaultReceiptSettings;
 
@@ -1186,8 +1221,8 @@
         const editCustomerAddressInput = document.getElementById('editCustomerAddress');
         const editDeliveryOptionSelect = document.getElementById('editDeliveryOption');
         const editDeliveryFeeInput = document.getElementById('editDeliveryFee');
-        const editPackageSize = document.getElementById('editPackageSize'); // NEW
-        const editCommissionQty = document.getElementById('editCommissionQty'); // NEW
+        const editPackageSize = document.getElementById('editPackageSize');
+        const editCommissionQty = document.getElementById('editCommissionQty');
         const editSaveBtn = document.getElementById('editSaveBtn');
         const editCancelBtn = document.getElementById('editCancelBtn');
         const editStoreNameSelect = document.getElementById('editStoreName');
@@ -1197,6 +1232,13 @@
         const editPaymentNotesInput = document.getElementById('editPaymentNotes');
         const editSellerNameSelect = document.getElementById('editSellerName');
         const editGeneralNoteInput = document.getElementById('editGeneralNote');
+        
+        // Items Edit Section Elements
+        const editItemName = document.getElementById('editItemName');
+        const editItemQty = document.getElementById('editItemQty');
+        const editItemPrice = document.getElementById('editItemPrice');
+        const btnEditAddItem = document.getElementById('btnEditAddItem');
+        const editModalItemsList = document.getElementById('editModalItemsList');
 
         const updatePaymentView = document.getElementById('updatePaymentView');
         const searchUpdateInvoiceInput = document.getElementById('searchUpdateInvoiceInput');
@@ -1254,7 +1296,7 @@
         const otherPaymentMethodContainer = document.getElementById('otherPaymentMethodContainer');
         const paymentNotesInput = document.getElementById('paymentNotes');
         const deliveryFeeInput = document.getElementById('deliveryFee');
-        const packageSizeSelect = document.getElementById('packageSizeSelect'); // NEW
+        const packageSizeSelect = document.getElementById('packageSizeSelect');
         
         const enableGeneralNoteCheckbox = document.getElementById('enableGeneralNote');
         const generalNoteInputContainer = document.getElementById('generalNoteInputContainer');
@@ -1307,7 +1349,7 @@
         const historyNavBtn = document.getElementById('historyNavBtn');
         const scanPackageNavBtn = document.getElementById('scanPackageNavBtn');
         
-        const desktopMenuBtn = document.getElementById('desktopMenuBtn'); // Desktop toggle button
+        const desktopMenuBtn = document.getElementById('desktopMenuBtn');
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const lightIcon = document.getElementById('lightIcon');
         const darkIcon = document.getElementById('darkIcon');
@@ -1320,9 +1362,8 @@
         const dashboardPaymentStatusFilter = document.getElementById('dashboardPaymentStatusFilter');
         const dashboardStoreFilter = document.getElementById('dashboardStoreFilter');
 
-        const rsHideTotals = document.getElementById('rsHideTotals'); // Global Setting
-        const rsHideItemTotal = document.getElementById('rsHideItemTotal'); // NEW Global Setting
-        const historyHideItemTotalColumn = document.getElementById('historyHideItemTotalColumn'); // NEW History Setting
+        const rsHideTotals = document.getElementById('rsHideTotals');
+        const rsHideItemTotal = document.getElementById('rsHideItemTotal');
         const rsTitleSize = document.getElementById('rsTitleSize');
         const rsTitleBold = document.getElementById('rsTitleBold');
         const rsDateSize = document.getElementById('rsDateSize');
@@ -1343,9 +1384,10 @@
         const rsMarginRight = document.getElementById('rsMarginRight');
         const saveReceiptSettingsBtn = document.getElementById('saveReceiptSettingsBtn');
 
-        const quickHideTotals = document.getElementById('quickHideTotals'); // Sales View Toggle
-        const historyHideTotals = document.getElementById('historyHideTotals'); // History View Toggle
-        const updateHideTotals = document.getElementById('updateHideTotals'); // Update View Toggle
+        const quickHideTotals = document.getElementById('quickHideTotals');
+        const historyHideTotals = document.getElementById('historyHideTotals');
+        const updateHideTotals = document.getElementById('updateHideTotals');
+        const historyHideItemTotalColumn = document.getElementById('historyHideItemTotalColumn');
         
         let confirmationCallback = null;
 
@@ -1606,7 +1648,7 @@
             jtRadio.checked = false;
             phnompenhRadio.checked = false;
             if (storeSelect) storeSelect.value = 'វិក្កយបត្រ';
-            if (packageSizeSelect) packageSizeSelect.value = 'normal'; // Reset package size
+            if (packageSizeSelect) packageSizeSelect.value = 'normal'; 
             document.querySelectorAll('.seller-select-checkbox').forEach(cb => cb.checked = false); 
             if (document.getElementById('commissionQty')) document.getElementById('commissionQty').value = '';
             
@@ -1636,7 +1678,6 @@
             const text = pasteInput.value.trim();
             if (!text) return showMessage('សូម Copy អត្ថបទពី Telegram បញ្ចូលសិនមុននឹងទាញយក!');
 
-            // Split by 3 or more underscores, hyphens, or equals signs, allowing spaces
             const sections = text.split(/[-_=]{3,}/).map(s => s.trim()).filter(s => s);
             
             if (sections.length < 5) {
@@ -1645,7 +1686,6 @@
             }
 
             try {
-                // Section 0: Try to match Store Name
                 if (sections[0]) {
                     const s0 = sections[0].toLowerCase();
                     Array.from(storeSelect.options).forEach(opt => {
@@ -1655,16 +1695,13 @@
                     });
                 }
 
-                // Section 1: Customer Name
                 if(sections[1]) customerNameInput.value = sections[1];
                 
-                // Section 2: Phone
                 if(sections[2]) {
                     customerPhoneInput.value = sections[2];
                     formatPhoneNumber(customerPhoneInput);
                 }
 
-                // Section 3: Address & Delivery
                 if(sections[3]) {
                     let addr = sections[3];
                     const lowerAddr = addr.toLowerCase();
@@ -1675,12 +1712,10 @@
                     } else if (lowerAddr.includes('ភ្នំពេញ') || lowerAddr.includes('phnom penh')) {
                         phnompenhRadio.checked = true;
                     }
-                    // Remove the delivery marker from address to keep it clean
                     addr = addr.replace(/\(j&t\)|\(vet\)|\(jnt\)/i, '').trim();
                     customerAddressInput.value = addr;
                 }
 
-                // Section 4: Items & Delivery Fee
                 if(sections[4]) {
                     const lines = sections[4].split('\n').map(l => l.trim()).filter(l => l);
                     currentInvoiceItems = []; 
@@ -1702,13 +1737,12 @@
                                 price = parseFloat(priceStr) || 0;
                             }
 
-                            // Extract QTY if separated by space (e.g. "កាហ្វេ 3")
                             let qtyMatch = itemName.match(/\s+(\d+)$/);
                             if (qtyMatch) {
                                 qty = parseInt(qtyMatch[1]);
                                 itemName = itemName.replace(/\s+(\d+)$/, '').trim();
                                 if (price > 0 && qty > 0) {
-                                    price = price / qty; // Price provided is usually total price
+                                    price = price / qty; 
                                 }
                             }
 
@@ -1737,7 +1771,6 @@
                     renderSalesList();
                 }
 
-                // Section 5: Payment & TxD
                 if(sections[5]) {
                     const parts = sections[5].split('|');
                     if (parts.length > 1) {
@@ -1753,11 +1786,11 @@
                              if(otherPaymentMethodInput) otherPaymentMethodInput.value = payInfo.split(' ')[0] || '';
                         }
 
-                        const txdMatch = payInfo.match(/\d{4,}/); // 4+ digits for TxD
+                        const txdMatch = payInfo.match(/\d{4,}/); 
                         if (txdMatch) {
                             paymentNotesInput.value = txdMatch[0];
                         } else {
-                            const remaining = payInfo.replace(/(aba|ac|wing|វីង|អ្នកដឹក)\s*/i, '').trim();
+                            const remaining = payInfo.replace(/(aba|ac|wing|វីង|តាមអ្នកដឹក|អ្នកដឹក)\s*/ig, '').trim();
                             if (remaining) paymentNotesInput.value = remaining;
                         }
                         
@@ -1765,7 +1798,6 @@
                     }
                 }
 
-                // Section 6: Seller & Commission Qty
                 if(sections[6]) {
                     const sellerPart = sections[6];
                     const match = sellerPart.match(/^(.*?)\s*ចំនួន\s*(\d+(\.\d+)?)/i);
@@ -1801,7 +1833,6 @@
                     }
                 }
 
-                // Section 7: General Note
                 if(sections[7]) {
                     enableGeneralNoteCheckbox.checked = true;
                     generalNoteInputContainer.classList.remove('hidden');
@@ -1859,13 +1890,11 @@
             const lowerCurrentCustomer = currentCustomerName.toLowerCase();
             const lowerName = name.toLowerCase();
 
-            // Check if duplicate in current unsaved list
             const hasSameInCurrent = currentInvoiceItems.some(item => item.name.toLowerCase() === lowerName);
             if (hasSameInCurrent) {
                 isDuplicateToday = true;
                 dupMessage = `ទំនិញ "${name}" មានរួចហើយនៅក្នុងបញ្ជីវិក្កយបត្របច្ចុប្បន្ន!`;
             } else if (currentCustomerName) {
-                // Check if duplicate in today's history for the same customer
                 const now = new Date();
                 const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 
@@ -2016,6 +2045,64 @@
             document.querySelectorAll('.delete-seller-db').forEach(button => button.addEventListener('click', deleteSellerFromDB));
         }
 
+        const renderEditModalItems = () => {
+            editModalItemsList.innerHTML = '';
+            editingInvoiceItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-2 py-2 whitespace-normal">${item.name}</td>
+                    <td class="px-2 py-2 text-center">${item.quantity}</td>
+                    <td class="px-2 py-2 text-right">$${item.price.toFixed(2)}</td>
+                    <td class="px-2 py-2 text-right font-semibold">$${item.total.toFixed(2)}</td>
+                    <td class="px-2 py-2 text-center">
+                        <button type="button" class="btn-remove-edit-item text-red-500 hover:text-red-700" data-index="${index}">
+                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                editModalItemsList.appendChild(row);
+            });
+        };
+
+        editModalItemsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-remove-edit-item');
+            if (btn) {
+                const index = parseInt(btn.dataset.index);
+                editingInvoiceItems.splice(index, 1);
+                renderEditModalItems();
+            }
+        });
+
+        btnEditAddItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            const name = editItemName.value.trim();
+            const qty = parseFloat(editItemQty.value);
+            const price = parseFloat(editItemPrice.value);
+
+            if (!name || isNaN(qty) || isNaN(price) || qty <= 0 || price < 0) {
+                showMessage('សូមបញ្ចូលឈ្មោះទំនិញ និងចំនួនឱ្យបានត្រឹមត្រូវ។');
+                return;
+            }
+
+            editingInvoiceItems.push({
+                name: name,
+                quantity: qty,
+                price: price,
+                total: qty * price
+            });
+
+            editItemName.value = '';
+            editItemQty.value = '1';
+            editItemPrice.value = '';
+            editItemName.focus();
+            renderEditModalItems();
+        });
+
+        editItemName.addEventListener('input', () => {
+            const prod = products.find(p => p.name === editItemName.value.trim());
+            if(prod) editItemPrice.value = (prod.price || 0).toFixed(2);
+        });
+
         const openEditModal = async (event) => {
             const docId = event.currentTarget.dataset.docId;
             const invoice = historyInvoices.find(inv => inv.id === docId);
@@ -2048,9 +2135,15 @@
             editPaymentNotesInput.value = invoice.paymentNotes || '';
             editDeliveryOptionSelect.value = invoice.deliveryOption || 'មិនបានជ្រើសរើស';
             editDeliveryFeeInput.value = (invoice.deliveryFee || 0).toFixed(2);
-            if (editPackageSize) editPackageSize.value = invoice.packageSize || 'normal'; // Load package size
+            if (editPackageSize) editPackageSize.value = invoice.packageSize || 'normal'; 
             if (editCommissionQty) editCommissionQty.value = invoice.commissionQty !== undefined && invoice.commissionQty !== null ? invoice.commissionQty : '';
             
+            editingInvoiceItems = JSON.parse(JSON.stringify(invoice.items || []));
+            renderEditModalItems();
+            editItemName.value = '';
+            editItemQty.value = '1';
+            editItemPrice.value = '';
+
             editModal.style.display = 'flex';
         };
 
@@ -2063,7 +2156,7 @@
             const updatedDeliveryFee = parseFloat(editDeliveryFeeInput.value) || 0;
             const updatedStoreName = editStoreNameSelect.value;
             const updatedPaymentNotes = editPaymentNotesInput.value.trim();
-            const updatedPackageSize = editPackageSize ? editPackageSize.value : 'normal'; // Save package size
+            const updatedPackageSize = editPackageSize ? editPackageSize.value : 'normal'; 
             const updatedCommissionQty = editCommissionQty && editCommissionQty.value ? parseFloat(editCommissionQty.value) : null;
             
             const updatedSellerName = editSellerNameSelect.value;
@@ -2078,6 +2171,11 @@
 
             if (!updatedCustomerName || !updatedCustomerPhone || !updatedCustomerAddress) {
                 showMessage('សូមបំពេញឈ្មោះ លេខទូរស័ព្ទ និងអាសយដ្ឋាន។'); return;
+            }
+
+            if (editingInvoiceItems.length === 0) {
+                showMessage("មិនអាចរក្សាទុកបានទេ វិក្កយបត្រត្រូវមានទំនិញយ៉ាងតិច១មុខ។");
+                return;
             }
 
             try {
@@ -2118,6 +2216,7 @@
                         generalNote: updatedGeneralNote,
                         paymentOption: finalPaymentOption, 
                         paymentNotes: updatedPaymentNotes,
+                        items: editingInvoiceItems,
                         updatedAt: new Date()
                     });
                     editModal.style.display = 'none';
@@ -2425,8 +2524,9 @@
                 const total = inv.items.reduce((s, i) => s + i.total, 0) + (inv.deliveryFee || 0);
                 
                 let qty = 0;
-                if (inv.commissionQty !== undefined && inv.commissionQty !== null && inv.commissionQty !== '') {
-                    qty = parseFloat(inv.commissionQty);
+                const parsedCommQty = parseFloat(inv.commissionQty);
+                if (!isNaN(parsedCommQty)) {
+                    qty = parsedCommQty;
                 } else {
                     qty = inv.items.reduce((s, i) => s + (parseFloat(i.quantity) || 0), 0);
                 }
@@ -2562,15 +2662,15 @@
                                 <td rowspan="3" style="width: 70px; vertical-align: bottom; padding-top: 4px;">
                                     ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
                                 </td>
-                                <td style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td>
+                                <td style="text-align: right; padding-top: 4px;">ទំនិញសរុប:</td>
                                 <td style="text-align: right; padding-top: 4px; width: 70px;">$${salesTotal.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <td style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td>
+                                <td style="text-align: right; padding-top: 4px;">សេវាដឹក:</td>
                                 <td style="text-align: right; padding-top: 4px;">$${deliveryFee.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">សរុបទាំងអស់:</td>
                                 <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$${finalTotal.toFixed(2)}</td>
                             </tr>
                         </table>
@@ -2971,15 +3071,15 @@
                                 <td rowspan="3" style="width: 70px; vertical-align: bottom; padding-top: 4px;">
                                     ${qrDataURL ? `<img src="${qrDataURL}" style="width: 65px; height: 65px; display: block; border: 1px solid #ddd; padding: 2px;" alt="QR">` : ''}
                                 </td>
-                                <td style="text-align: right; padding-top: 4px;">តម្លៃទំនិញសរុប:</td>
+                                <td style="text-align: right; padding-top: 4px;">ទំនិញសរុប:</td>
                                 <td style="text-align: right; padding-top: 4px; width: 70px;">$35.00</td>
                             </tr>
                             <tr>
-                                <td style="text-align: right; padding-top: 4px;">តម្លៃសេវាដឹក:</td>
+                                <td style="text-align: right; padding-top: 4px;">សេវាដឹក:</td>
                                 <td style="text-align: right; padding-top: 4px;">$1.50</td>
                             </tr>
                             <tr>
-                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">តម្លៃសរុបទាំងអស់:</td>
+                                <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">សរុបទាំងអស់:</td>
                                 <td style="text-align: right; padding-top: 4px; font-size: ${parseInt(s.totalSize) + 2}px;">$36.50</td>
                             </tr>
                         </table>
@@ -3128,7 +3228,7 @@
                 
                 const hideTotals = document.getElementById('updateHideTotals').checked;
                 const generatedHtml = generateInvoiceHTML(updatedInvoiceData, updatedInvoiceData.invoiceNumber, hideTotals, false);
-                await showImagePreview(generatedHtml);
+                await showImagePreview(generatedHtml, docId);
 
                 updatePaymentFormContainer.classList.add('hidden');
                 searchUpdateInvoiceInput.value = '';
@@ -3184,7 +3284,7 @@
             });
         };
 
-        const showImagePreview = async (invoiceHTML) => {
+        const showImagePreview = async (invoiceHTML, docId = null) => {
             invoicePreviewContent.innerHTML = '<div class="p-4 text-center text-gray-500">កំពុងបង្កើតរូបភាព...</div>';
             previewModal.style.display = 'flex';
             
@@ -3196,7 +3296,17 @@
                 invoicePreviewContent.innerHTML = '<div class="p-4 text-center text-red-500">បរាជ័យក្នុងការបង្កើតរូបភាព។</div>';
             }
             
-            previewPrintBtn.onclick = () => {
+            previewPrintBtn.onclick = async () => {
+                if (docId) {
+                    try {
+                        const invRef = doc(db, `artifacts/${appId}/public/data/invoices`, docId);
+                        const invSnap = await getDoc(invRef);
+                        if (invSnap.exists()) {
+                            await updateDoc(invRef, { printCount: (invSnap.data().printCount || 0) + 1 });
+                        }
+                    } catch (e) { console.error("Error updating print count", e); }
+                }
+
                 const printWindow = window.open('', '_blank', 'height=600,width=800');
                 const s = receiptSettings;
                 const ml = s.marginLeft !== undefined ? s.marginLeft : -6;
@@ -3236,10 +3346,11 @@
                 const invoiceData = {
                     customerName, customerPhone, customerAddress, deliveryOption, paymentOption, paymentNotes, deliveryFee, packageSize, storeName, sellerName, commissionQty, generalNote,
                     items: currentInvoiceItems, timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: shouldPrint ? new Date() : null,
+                    printCount: shouldPrint ? 1 : 0
                 };
-                await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
+                const docRef = await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                 if (shouldPrint) {
-                    printInvoice(invoiceData, newInvoiceNumber, forceHideTotals, false);
+                    printInvoice({...invoiceData, printCount: 1}, newInvoiceNumber, forceHideTotals, false);
                     showMessage('វិក្កយបត្រត្រូវបានបោះពុម្ព។');
                 } else {
                     showMessage('ទិន្នន័យត្រូវបានរក្សាទុក។');
@@ -3322,12 +3433,13 @@
                         paymentOption: getPaymentOptions(), paymentNotes: paymentNotesInput.value.trim(), 
                         deliveryFee: parseFloat(deliveryFeeInput.value) || 0, packageSize, storeName, sellerName, commissionQty: commissionQtyVal, generalNote,
                         items: [...currentInvoiceItems], timestamp: new Date(), invoiceNumber: newInvoiceNumber, lastBulkPrinted: null,
+                        printCount: 0
                     };
                     
-                    await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
+                    const docRef = await addDoc(collection(db, `artifacts/${appId}/public/data/invoices`), invoiceData);
                     
                     const generatedHtml = generateInvoiceHTML(invoiceData, newInvoiceNumber, hideTotals, false);
-                    await showImagePreview(generatedHtml);
+                    await showImagePreview(generatedHtml, docRef.id);
 
                     currentInvoiceItems = [];
                     renderSalesList();
@@ -3365,7 +3477,11 @@
             const hideTotals = document.getElementById('historyHideTotals').checked;
             const hideItemTotal = document.getElementById('historyHideItemTotalColumn').checked;
             if (invoice) {
-                printInvoice(invoice, invoice.invoiceNumber, hideTotals, hideItemTotal);
+                const newCount = (invoice.printCount || 0) + 1;
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, docId), { printCount: newCount });
+                } catch (e) { console.error(e); }
+                printInvoice({...invoice, printCount: newCount}, invoice.invoiceNumber, hideTotals, hideItemTotal);
             }
         };
 
@@ -3385,7 +3501,7 @@
             }, 500);
         };
 
-        const printMultipleInvoices = (invoiceIdsSet) => {
+        const printMultipleInvoices = async (invoiceIdsSet) => {
             const invoicesToPrint = historyInvoices.filter(inv => invoiceIdsSet.has(inv.id));
             if (invoicesToPrint.length === 0) return;
 
@@ -3396,26 +3512,23 @@
             const hideTotals = document.getElementById('historyHideTotals').checked;
             const hideItemTotal = document.getElementById('historyHideItemTotalColumn').checked;
             
-            printWindow.document.write(`<html><head><title>បោះពុម្ពវិក្កយបត្រចំនួន ${invoicesToPrint.length}</title><style>
-                @page { size: 80mm auto; margin: 0; } 
-                body {font-family: "Khmer OS Battambang", Arial, sans-serif; line-height: ${s.lineHeight || 1.2}; color: #000; margin: 0; padding: 0; margin-left: ${ml}mm; margin-right: ${mr}mm;} 
-                table {width: 100%; border-collapse: collapse;} 
-                th, td {padding: 2px 0; text-align: left;}
-                .page-break { page-break-after: always; margin-bottom: 20px; }
-                .page-break:last-child { page-break-after: auto; margin-bottom: 0; }
-            </style></head><body>`);
+            printWindow.document.write(`<html><head><title>បោះពុម្ពវិក្កយបត្រចំនួន ${invoicesToPrint.length}</title><style>@page { size: 80mm auto; margin: 0; } body{font-family: "Khmer OS Battambang", Arial, sans-serif; line-height: ${s.lineHeight || 1.2}; color: #000; margin: 0; padding: 0; margin-left: ${ml}mm; margin-right: ${mr}mm;} table{width: 100%; border-collapse: collapse;} th, td{padding: 2px 0; text-align: left;} .page-break { page-break-after: always; margin-bottom: 20px; } .page-break:last-child { page-break-after: auto; margin-bottom: 0; }</style></head><body>`);
             
-            invoicesToPrint.forEach((inv) => {
-                const invoiceHTML = generateInvoiceHTML(inv, inv.invoiceNumber, hideTotals, hideItemTotal);
+            for (const inv of invoicesToPrint) {
+                const newCount = (inv.printCount || 0) + 1;
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/public/data/invoices`, inv.id), { printCount: newCount });
+                } catch (e) {}
+                const invoiceHTML = generateInvoiceHTML({...inv, printCount: newCount}, inv.invoiceNumber, hideTotals, hideItemTotal);
                 printWindow.document.write(`<div class="page-break">${invoiceHTML}</div>`);
-            });
+            }
             
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.focus();
             
             // Timeout allows the browser rendering to finish layouting
-            setTimeout(async () => {
+            setTimeout(() => {
                 printWindow.print();
                 
                 // Clear checkboxes after print dialog opens
@@ -3429,7 +3542,7 @@
                     selectAllBtn.classList.add('bg-gray-300', 'text-gray-800');
                     selectAllBtn.classList.remove('bg-yellow-500', 'text-white');
                 }
-            }, 500);
+            }, 800);
         };
 
         const downloadDataAsCsv = async () => {
@@ -3720,7 +3833,7 @@
         if (printBtn) printBtn.addEventListener('click', () => handleSaveAction(true));
         if (saveOnlyBtn) saveOnlyBtn.addEventListener('click', () => handleSaveAction(false));
         if (saveAndPreviewBtn) saveAndPreviewBtn.addEventListener('click', handleSaveAndPreview); 
-        if (clearCurrentListBtn) clearCurrentListBtn.addEventListener('click', () => currentInvoiceItems = [] || renderSalesList());
+        if (clearCurrentListBtn) clearCurrentListBtn.addEventListener('click', () => { currentInvoiceItems = []; renderSalesList(); });
         
         if (addNewProductBtn) addNewProductBtn.addEventListener('click', addNewProduct);
         if (addNewStoreBtn) addNewStoreBtn.addEventListener('click', addNewStore);
@@ -3837,6 +3950,13 @@
             const prod = products.find(p => p.name === itemNameInput.value.trim());
             if(prod) itemPriceInput.value = (prod.price || 0).toFixed(2);
         });
+
+        // Handle Prov/City expand breakdown toggle
+        if (provCardBtn) {
+            provCardBtn.addEventListener('click', () => {
+                provBreakdown.classList.toggle('hidden');
+            });
+        }
 
         toggleView('dashboard');
     </script>
